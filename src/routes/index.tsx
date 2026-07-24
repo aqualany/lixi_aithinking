@@ -1,24 +1,44 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { FixedNav } from "@/components/portfolio/FixedNav";
+import { Hero } from "@/components/portfolio/Hero";
+import { AbstractCards } from "@/components/portfolio/AbstractCards";
+import { ResearchArticle } from "@/components/portfolio/ResearchArticle";
+import { Experiments } from "@/components/portfolio/Experiments";
+import { Resume } from "@/components/portfolio/Resume";
+import { Footer } from "@/components/portfolio/Footer";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Lin Yuan — Research Portfolio, AI Creative Data PM" },
+      {
+        name: "description",
+        content:
+          "Essay on AI writing and language understanding, poetry & fiction generation experiments, and résumé for the DeepSeek AI Creative Data Product Manager role.",
+      },
+      { property: "og:title", content: "Lin Yuan — Research Portfolio" },
+      {
+        property: "og:description",
+        content:
+          "A single-page portfolio: long-form essay on creative data, prompt-iteration case studies, and professional background.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen bg-background text-foreground">
+      <FixedNav />
+      <main>
+        <Hero />
+        <AbstractCards />
+        <ResearchArticle />
+        <Experiments />
+        <Resume />
+      </main>
+      <Footer />
     </div>
   );
 }

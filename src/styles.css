@@ -9,15 +9,15 @@ html {
 }
 
 html {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 @theme {
-  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-serif: "Source Serif 4", "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
+  --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Noto Sans SC", monospace;
 }
 
 /*
@@ -79,25 +79,25 @@ html {
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.15 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.15 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.15 0 0);
+  --background: oklch(0.985 0.005 85);
+  --foreground: oklch(0.18 0.01 60);
+  --card: oklch(0.985 0.005 85);
+  --card-foreground: oklch(0.18 0.01 60);
+  --popover: oklch(0.985 0.005 85);
+  --popover-foreground: oklch(0.18 0.01 60);
+  --primary: oklch(0.18 0.01 60);
+  --primary-foreground: oklch(0.985 0.005 85);
+  --secondary: oklch(0.955 0.008 85);
+  --secondary-foreground: oklch(0.18 0.01 60);
+  --muted: oklch(0.955 0.008 85);
+  --muted-foreground: oklch(0.5 0.01 60);
+  --accent: oklch(0.955 0.008 85);
+  --accent-foreground: oklch(0.18 0.01 60);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.9 0 0);
-  --ring: oklch(0.7 0 0);
+  --border: oklch(0.88 0.005 85);
+  --input: oklch(0.88 0.005 85);
+  --ring: oklch(0.7 0.01 60);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -157,4 +157,67 @@ html {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  ::selection {
+    background-color: oklch(0.18 0.01 60);
+    color: oklch(0.985 0.005 85);
+  }
+}
+
+/* Long-form Chinese article typography */
+.prose-article {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+  color: var(--foreground);
+}
+.prose-article p {
+  text-indent: 2em;
+  margin: 0;
+  padding: 0.35em 0;
+}
+.prose-article p:first-of-type {
+  text-indent: 0;
+}
+.prose-article h3 {
+  text-indent: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: 2.5em;
+  margin-bottom: 0.6em;
+}
+.prose-article ul,
+.prose-article ol,
+.prose-article blockquote {
+  text-indent: 0;
+  margin: 1.2em 0;
+}
+.prose-article ul li,
+.prose-article ol li {
+  text-indent: 0;
+  padding: 0.15em 0;
+}
+.prose-article em {
+  font-style: italic;
+  color: var(--foreground);
+}
+
+.divider-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6em;
+  color: var(--muted-foreground);
+  font-family: var(--font-serif);
+  letter-spacing: 0.4em;
+  margin: 3rem 0;
+  user-select: none;
+}
+
+.zh-title {
+  font-family: var(--font-serif);
+  letter-spacing: 0.03em;
+  line-height: 1.35;
 }

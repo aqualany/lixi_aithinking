@@ -77,18 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lin Yuan — AI Creative Data Product Manager, Research Portfolio" },
+      { title: "聂蓝玉 · AI 创作数据研究者 个人主页" },
       {
         name: "description",
         content:
-          "Research portfolio of an AI Creative Data Product Manager: essays on AI writing and language understanding, poetry and fiction generation experiments, and professional background.",
+          "聂蓝玉的个人研究主页：关于 AI 写作、语言理解与创意数据的长文，一组诗歌与小说生成的提示词迭代记录，以及简历。",
       },
-      { name: "author", content: "Lin Yuan" },
-      { property: "og:title", content: "Lin Yuan — AI Creative Data Product Manager" },
+      { name: "author", content: "聂蓝玉" },
+      { property: "og:title", content: "聂蓝玉 · AI 创作数据研究者" },
       {
         property: "og:description",
         content:
-          "Essays on AI writing, prompt iteration experiments in poetry and fiction, and a résumé for the DeepSeek AI Creative Data PM role.",
+          "关于 AI 写作、语言理解与创意数据的研究长文，诗歌与小说生成的提示词迭代实验，以及工作经历。",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -104,7 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
   }),
@@ -116,7 +116,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <head>
         <HeadContent />
       </head>

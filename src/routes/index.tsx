@@ -10,17 +10,17 @@ import { Footer } from "@/components/portfolio/Footer";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lin Yuan — Research Portfolio, AI Creative Data PM" },
+      { title: "聂蓝玉 · AI 创作数据研究者 个人主页" },
       {
         name: "description",
         content:
-          "Essay on AI writing and language understanding, poetry & fiction generation experiments, and résumé for the DeepSeek AI Creative Data Product Manager role.",
+          "长文：论 AI 写作与语言理解；实验笔记：现代诗、宋词与小说的提示词迭代；简历：工作经历与联系方式。",
       },
-      { property: "og:title", content: "Lin Yuan — Research Portfolio" },
+      { property: "og:title", content: "聂蓝玉 · 个人研究主页" },
       {
         property: "og:description",
         content:
-          "A single-page portfolio: long-form essay on creative data, prompt-iteration case studies, and professional background.",
+          "关于创意数据的长文，一组提示词迭代的实验笔记，以及工作经历。",
       },
     ],
   }),

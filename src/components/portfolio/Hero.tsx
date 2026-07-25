@@ -1,42 +1,85 @@
+import { useEffect, useRef, useState } from "react";
+
+const AVATAR_KEY = "portfolio.avatar";
+
 export function Hero() {
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(AVATAR_KEY);
+      if (saved) setAvatar(saved);
+    } catch {}
+  }, []);
+
+  const onPick = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = String(reader.result || "");
+      setAvatar(data);
+      try {
+        localStorage.setItem(AVATAR_KEY, data);
+      } catch {}
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
-    <header id="top" className="mx-auto max-w-3xl px-6 pt-36 pb-24">
-      <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-        个人主页 · 最近更新 二〇二六年十一月
-      </p>
-      <h1 className="mt-10 font-serif text-[44px] leading-[1.25] tracking-[0.04em] text-foreground sm:text-[56px]">
-        聂蓝玉
-      </h1>
-      <p className="mt-2 font-sans text-sm tracking-[0.25em] text-muted-foreground uppercase">
-        Nie&nbsp;Lanyu
-      </p>
-      <p className="mt-8 font-serif text-lg tracking-[0.02em] text-foreground">
-        AI 创作数据方向研究者 · 前 UI 设计师
-      </p>
+    <header id="top" className="mx-auto max-w-3xl px-6 pt-32 pb-16">
+      <div className="grid grid-cols-[1fr_auto] items-start gap-8 sm:gap-12">
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+            个人主页 · 最近更新 二〇二六年十一月
+          </p>
+          <h1 className="mt-8 font-zhuque text-[52px] leading-[1.15] tracking-[0.06em] text-foreground sm:text-[68px]">
+            聂灵晞
+          </h1>
+          <p className="mt-3 font-sans text-xs tracking-[0.28em] text-muted-foreground uppercase">
+            Nie&nbsp;Lingxi
+          </p>
 
-      <div className="mt-10 space-y-5 font-serif text-[17px] leading-[1.95] tracking-[0.01em] text-foreground">
-        <p>
-          我关注的是当大模型学会流畅之后的事：创造性写作的数据从哪里来，谁在写它，以及那些写作过程中未被记录的判断——为什么用这个词而不是另一个——能否被表述、被组织、被作为一种可训练的信号保存下来。
-        </p>
-        <p>
-          在做研究之前，我做了几年产品与视觉设计。这份履历让我倾向于把&ldquo;数据&rdquo;当作产品问题，而不是抓取问题：它关乎写作者被邀请贡献什么、以什么形式、在什么反馈回路里。
-        </p>
-        <p>
-          这份主页收录三部分：一篇论文式长文、一组提示词迭代的实验笔记、一份简短的简历。它们互相印证的是同一个立场——语言模型接下来变得有趣的地方，不在模型本身，而在我们愿意为它准备什么样的材料。
-        </p>
-      </div>
+          <div className="mt-8 space-y-2.5 font-serif text-[16.5px] leading-[1.9] tracking-[0.01em] text-foreground">
+            <p>写作者，AI 创作探索中。</p>
+            <p>曾是六年 UI 设计师。</p>
+            <p>兴趣：设计与制作首饰，vibe-coding 产品点子。</p>
+            <p>理性分析 &amp; 感性共情的 INFJ。</p>
+          </div>
+        </div>
 
-      <div className="mt-12 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[12px] tracking-[0.12em] text-muted-foreground">
-        <span>+86 138 0000 0000</span>
-        <span aria-hidden>·</span>
-        <a
-          href="mailto:nielanyu@example.com"
-          className="transition-colors hover:text-foreground"
-        >
-          nielanyu@example.com
-        </a>
-        <span aria-hidden>·</span>
-        <span>常驻 · 杭州</span>
+        <div className="shrink-0">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="group relative block h-28 w-28 overflow-hidden rounded-full border border-border bg-muted sm:h-36 sm:w-36"
+            aria-label="上传头像"
+          >
+            {avatar ? (
+              <img
+                src={avatar}
+                alt="头像"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                上传照片
+              </span>
+            )}
+            <span className="absolute inset-0 flex items-end justify-center bg-foreground/0 pb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-transparent transition-all group-hover:bg-foreground/40 group-hover:text-background">
+              更换
+            </span>
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onPick(f);
+            }}
+          />
+        </div>
       </div>
     </header>
   );

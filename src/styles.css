@@ -18,6 +18,17 @@ html {
   --font-serif: "Source Serif 4", "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
   --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Noto Sans SC", monospace;
+  --font-zhuque: "Zhuque Fangsong (technical preview)", "Noto Serif SC", "STFangsong", "FangSong", serif;
+}
+
+.font-zhuque {
+  font-family: var(--font-zhuque);
+  font-weight: 400;
+}
+
+.fade-mask-b {
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
 }
 
 /*

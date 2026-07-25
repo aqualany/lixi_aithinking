@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Hero } from "@/components/portfolio/Hero";
-import { AbstractCards } from "@/components/portfolio/AbstractCards";
-import { ResearchArticle } from "@/components/portfolio/ResearchArticle";
+import { SectionTabs, type TabId } from "@/components/portfolio/AbstractCards";
+import { ResearchPreview } from "@/components/portfolio/ResearchArticle";
 import { Experiments } from "@/components/portfolio/Experiments";
 import { Resume } from "@/components/portfolio/Resume";
 import { Footer } from "@/components/portfolio/Footer";
@@ -10,13 +11,13 @@ import { Footer } from "@/components/portfolio/Footer";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "聂蓝玉 · AI 创作数据研究者 个人主页" },
+      { title: "聂灵晞 · 写作者 · AI 创作探索" },
       {
         name: "description",
         content:
           "长文：论 AI 写作与语言理解；实验笔记：现代诗、宋词与小说的提示词迭代；简历：工作经历与联系方式。",
       },
-      { property: "og:title", content: "聂蓝玉 · 个人研究主页" },
+      { property: "og:title", content: "聂灵晞 · 个人主页" },
       {
         property: "og:description",
         content:
@@ -28,15 +29,36 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const [tab, setTab] = useState<TabId>("research");
+
+  useEffect(() => {
+    const apply = () => {
+      const h = window.location.hash.replace("#", "");
+      if (h === "research" || h === "experiments" || h === "resume") {
+        setTab(h);
+      }
+    };
+    apply();
+    window.addEventListener("hashchange", apply);
+    return () => window.removeEventListener("hashchange", apply);
+  }, []);
+
+  const onChange = (id: TabId) => {
+    setTab(id);
+    if (typeof window !== "undefined") {
+      history.replaceState(null, "", `#${id}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <FixedNav />
+      <FixedNav activeTab={tab} onTabChange={onChange} />
       <main>
         <Hero />
-        <AbstractCards />
-        <ResearchArticle />
-        <Experiments />
-        <Resume />
+        <SectionTabs active={tab} onChange={onChange} />
+        {tab === "research" && <ResearchPreview />}
+        {tab === "experiments" && <Experiments />}
+        {tab === "resume" && <Resume />}
       </main>
       <Footer />
     </div>

@@ -1,108 +1,176 @@
-# 改造为中文 AI 研究者个人网站
+# 轻量 CMS 数据库方案（外部 Supabase）
 
-整体从"求职作品集"改为"研究者个人主页"风格（参考 Chris Olah、Gwern、arXiv 作者页、《The Paris Review》专栏页），但保留审美层次——不是纯素文本，而是有讲究的编辑设计。全站文案改为中文。
+面向当前站点（Hero / 研究长文 / 实验笔记 / 简历 / 页面装饰位）设计。原则：**少而正交** —— 用少量通用表覆盖"结构化内容 + 自由板块 + 页面装点"三类需求，避免每加一种展示位就建一张表。
 
-## 中文字体系统
+## 一、表清单（8 张）
 
-在 `src/routes/__root.tsx` 的 `head.links` 中加载 Google Fonts（不要在 styles.css 里 `@import` 远程 URL）：
-
-- 衬线（标题、正文长文）：`Noto Serif SC`（400/500/700） + 拉丁配对 `Source Serif 4`
-- 无衬线（导航、元信息、CV）：`Noto Sans SC`（400/500） + 拉丁配对 `Inter`
-- 等宽（编号、表格、脚注）：`JetBrains Mono`
-
-在 `src/styles.css` 的 `@theme` 里更新 token：
-
-```
---font-serif: "Source Serif 4", "Noto Serif SC", "Songti SC", "SimSun", serif;
---font-sans:  "Inter", "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
---font-mono:  "JetBrains Mono", ui-monospace, monospace;
+```text
+site_settings      站点级单例：站名、SEO、头像、社交链接
+profile            作者信息：姓名、简介、tag 列表（对应 Hero）
+pages              页面：/、/research、/experiments/[slug] 等
+content_types      内容类型注册：article / experiment / 未来新增板块
+posts              所有长文内容（研究长文、实验笔记、未来新板块）
+post_sections      文章内小节（副标题锚点、目录）
+media              上传的图片/资源
+blocks             页面上的"块":广告位、外链、推荐、按钮、图卡、富文本…
 ```
 
-`html` 默认 `font-sans`；`.prose-article`、文章 h1/h2、Hero 名称、引言使用 `font-serif`。
-中文行高比拉丁略大：正文 `leading-[1.85]`，标题 `leading-[1.35]`；中文字距 `tracking-[0.01em]`。
+---
 
-## 全局视觉（保留审美）
+## 二、字段设计
 
-- `src/styles.css`：
-  - 背景不用纯白，用微暖 `oklch(0.985 0.005 85)`（纸感）；`--foreground` `oklch(0.18 0.01 60)`（近黑带暖）；`--muted-foreground` `oklch(0.5 0.01 60)`；`--border` `oklch(0.88 0.005 85)`。
-  - 保留 `scroll-behavior: smooth`。
-  - 新增 `.prose-article` 类：正文 17px / 1.85，段首缩进 2em（中文习惯），段间距 1.2em；`p + p` 不加额外 margin，靠 text-indent 分段。
-  - 引言/摘要用 `border-l` + 斜体衬线。
-  - 提供一个装饰性分节符 `§` 或三点 `· · ·` 居中作为章节间隔（比纯 hr 更有编辑感）。
+### 1. `site_settings`（单行）
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | 固定一行 |
+| site_name | text | 站点名 |
+| author_name | text | 显示名（聂灵晞） |
+| avatar_media_id | uuid FK→media | 头像 |
+| seo_title / seo_description | text | 默认 SEO |
+| socials | jsonb | `[{label, url}]` GitHub/邮箱等 |
+| updated_at | timestamptz | |
 
-## FixedNav（顶部导航）
+### 2. `profile`（Hero 区）
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | |
+| display_name | text | 聂灵晞 |
+| bio_lines | jsonb (text[]) | Hero 下方几行小字 |
+| tags | jsonb (text[]) | INFJ / vibe-coding 等 |
+| avatar_media_id | uuid FK→media | 圆形头像 |
+| updated_at | timestamptz | |
 
-- 更细（h-12），左：中文姓名 + 一行身份（"林渊 · 独立研究者 · 创意数据"）。
-- 右：三个中文锚点 —— `研究`、`实验`、`简历`。
-- 当前区块下加 1px 实线下划线，非胶囊背景；hover 只是轻微字重变化。
-- 移动端保留全部三个链接，只缩小间距，不做汉堡菜单。
+> 与 site_settings 分开：一个是"站"、一个是"人"，未来若做多作者只需扩这张。
 
-## Hero → 作者头部
+### 3. `content_types`（可扩展的关键）
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | |
+| slug | text unique | `article` / `experiment` / 未来 `note` |
+| label | text | 中文名"研究长文" |
+| schema | jsonb | 该类型专属字段定义（如实验笔记的 hypothesis / optimization / self_training） |
+| list_page_path | text | 列在哪个页面下 |
 
-不再是大标题海报，而是一段研究者自陈：
+> 新增板块不建表，只在这里加一行 + 在 `posts.extra` 存对应字段。
 
-- 一行 serif 大字姓名"聂蓝玉 "（muted）。
-- 单行身份："AI 创作数据方向研究者 · 前UI设计师"。
-- 一段 3–4 句中文自述（研究立场，不是求职话术）："我关注的是当大模型学会流畅之后，创造性写作的数据从哪里来……"
-- 联系行：手机号码 · 邮箱 ，纯文字链，`·` 分隔。
-- 末尾一行斜体 muted："最近更新：2026 年 11 月"。
-- 去掉"阅读时长"、"作者/角色/时长"三栏。
+### 4. `posts`（所有文章的统一表）
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | |
+| type_id | uuid FK→content_types | 决定它是长文还是实验笔记 |
+| slug | text unique | 路由 slug |
+| title | text | |
+| subtitle | text | |
+| excerpt | text | 卡片/列表摘要 |
+| cover_media_id | uuid FK→media | 封面 |
+| body_md | text | 正文（Markdown） |
+| extra | jsonb | 该 type 特有的结构化字段（如 hypothesis、optimization 步骤、self_training） |
+| status | text | draft / published |
+| published_at | timestamptz | 排序、目录 |
+| sort_order | int | 手动置顶时用 |
+| seo_title / seo_description | text | 覆盖默认 |
+| created_at / updated_at | timestamptz | |
 
-## AbstractCards → 目录
+### 5. `post_sections`（文章内目录）
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | |
+| post_id | uuid FK→posts (cascade) | |
+| anchor | text | `#intro` |
+| title | text | 侧栏显示的副标题 |
+| order_index | int | 目录顺序 |
 
-取消三张卡片，改为一张"本页目录"（像论文 TOC，但排版讲究）：
+> 也可用正文里的 H2 自动解析，但独立表更利于后台编辑与锚点跳转。
 
-- 左侧 mono 编号 `01 02 03`，右侧中文标题 + 一行副标题（灰色）。
-- 每行 hairline 分隔，hover 时右侧标题下划线。
-- 例：
-  - `01 ——` 我对AI创作数据的思考
-  - `02 —— AI写作记录｜在现代诗、宋词和小说写作时，与AI协作的经历和迭代提示词的思考`
-  - `03 —— 简历｜工作经历`
+### 6. `media`
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | |
+| storage_path | text | Supabase Storage key |
+| public_url | text | |
+| alt | text | 无障碍 / SEO |
+| width / height | int | |
+| mime | text | |
+| created_at | timestamptz | |
 
-## ResearchArticle（研究文章）
+### 7. `blocks`（广告位 / 外链 / 推荐 / 按钮 / 图卡 …）
+一张表统吃所有"页面装点位"。
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | |
+| page_id | uuid FK→pages (nullable) | 挂在哪个页面 |
+| slot | text | `home_top` / `home_side` / `research_footer`（约定命名） |
+| kind | text | `ad` / `link` / `recommendation` / `button` / `image_card` / `richtext` |
+| title | text | |
+| body | text | 可选说明 / 富文本 |
+| media_id | uuid FK→media | 图卡/广告图 |
+| href | text | 外链目标 |
+| cta_label | text | 按钮文案 |
+| target_post_id | uuid FK→posts | "推荐内容"直接指向站内文章 |
+| extra | jsonb | kind 专属字段（如广告的 utm、按钮的 variant） |
+| order_index | int | 同 slot 内排序 |
+| is_active | bool | 一键上下线 |
+| starts_at / ends_at | timestamptz | 广告排期，可空 |
 
-内容全文中译并重写为研究者语气（非市场语），保留原有五节结构：
+> 新增一种展示物（如"引用卡"）→ 只加一个 `kind` 值，不建表。
 
-- 顶部 eyebrow：`研究 · 论文 01`（mono 小字）。
-- 大标题（serif，中文）："流畅之后：论写作、语言理解与创意数据"。
-- 副行：作者 · 日期 · 阅读字数（"约 4,800 字"）。
-- 摘要段：`摘要。`开头，斜体衬线，3 句。
-- 五个二级标题改为中文编号："一、流畅的高原"、"二、语言理解真正要求什么"、"三、创意数据作为一个产品问题"、"四、三条我反复回到的原则"、"五、这份主页想论证什么"。
-- 正文中出现 `[1]` `[2]` 上标脚注引用；文末"注释"区列出 3–5 条（可含参考文献风格条目：作者《篇名》，期刊/出版社，年份）。
-- 保留一处引文（blockquote），衬线斜体大字。
-- 桌面端加右侧边注列 `md:grid-cols-[1fr_180px]`，放 2–3 条 marginalia（发布日期、交叉引用、术语说明）；移动端折叠。
-- 章节间用居中 `· · ·` 分隔符。
+### 8. `pages`
+| 字段 | 类型 | 用途 |
+|---|---|---|
+| id | uuid PK | |
+| path | text unique | `/` `/research` … |
+| title | text | |
+| seo_title / seo_description | text | |
+| updated_at | timestamptz | |
 
-## Experiments（实验）→ 实验笔记
+---
 
-改为"实验笔记"栏目，三则中文条目：
+## 三、关系图
 
-- 标题行：`笔记 01 · 形式约束下的诗歌生成 · 2026-08`
-- 一句斜体假设："如果把韵律约束显式化，模型能否在保留意象的同时收敛到指定格律？"
-- 提示词迭代表格（mono 字体，紧凑）：列为 `版本 / 提示词摘要 / 输出片段 / 失败模式`，v1→v2→v3。
-- 结尾 2–3 句"记录"：写观察到什么、下一步会试什么。
-- 三则之间用 hairline + `· · ·` 分节。
-- 三则主题：诗歌形式约束、短篇小说人物一致性、编辑修订轨迹作为训练信号。
+```text
+site_settings ─┐
+               ├──> media
+profile ───────┘
 
-## Resume → 简历 / CV
+content_types 1──n posts 1──n post_sections
+                   posts n──1 media (cover)
 
-- 标题改为中文"简历"，副标题"工作经历"。
-- 两列布局：左列 mono 年份区间（固定宽 9rem），右列职务 / 机构 / 一行说明。取消 timeline 圆点竖线。
-- 分四小节：`工作经历`、`教育`（新增，3–4 条：年份 · 中文标题 · 载体）、`技能与联系`。
-- 技能改为一段散文式中文列举，不再用 tag pills。
-- 末尾"联系"：手机号码、邮箱。
+pages 1──n blocks n──1 media
+              blocks n──1 posts   (推荐位指向文章)
+```
 
-## Footer
+关键点：`content_types + posts.extra` 让新增内容板块无需迁移；`blocks.kind + extra` 让新增展示位无需迁移。
 
-单行细体：`聂蓝玉 · 2026 · 用普通的 HTML 写成 · GitHub`，纯文字链，一条 hairline 上边框。
+---
 
-## 文件改动
+## 四、RLS 建议
 
-编辑：
+统一原则：**读公开、写仅管理员**。使用 `user_roles` + `has_role()` 的标准模式（不要把角色存 profile）。
 
-- `src/styles.css`（字体 token、纸色背景、`.prose-article`、中文行高字距）
-- `src/routes/__root.tsx`（Google Fonts links、meta 改为中文标题/描述）
-- `src/routes/index.tsx`（meta 中文化，结构不变）
-- `FixedNav.tsx`、`Hero.tsx`、`AbstractCards.tsx`、`ResearchArticle.tsx`、`Experiments.tsx`、`Resume.tsx`、`Footer.tsx`（全部中文化 + 排版调整）
+| 表 | anon SELECT | authenticated SELECT | 写入 |
+|---|---|---|---|
+| site_settings | ✅ | ✅ | admin only |
+| profile | ✅ | ✅ | admin only |
+| pages | ✅ | ✅ | admin only |
+| content_types | ✅ | ✅ | admin only |
+| posts | ✅ 仅 `status='published'` | ✅ 已发布 + 自己的草稿 | admin only |
+| post_sections | ✅ 若父 post 已发布 | 同上 | admin only |
+| media | ✅ | ✅ | admin only |
+| blocks | ✅ 仅 `is_active` 且在排期内 | ✅ 全部 | admin only |
 
-&nbsp;
+补充：
+- 每张表 `ENABLE ROW LEVEL SECURITY` + 显式 `GRANT SELECT ON ... TO anon, authenticated`；写权限只 `GRANT` 给 `authenticated`，具体是否放行由 policy 中 `has_role(auth.uid(),'admin')` 决定。
+- `service_role` 全表 `GRANT ALL`（后台脚本 / 迁移用）。
+- Storage bucket `media` 设 public read、仅 admin write。
+- 单独一张 `user_roles(user_id, role app_role)` + `SECURITY DEFINER` 函数 `has_role`，避免递归 RLS。
+
+---
+
+## 五、为什么这样够用又可扩展
+
+1. **少表**：8 张覆盖内容、页面、装点位、媒体、权限。
+2. **两个"注册表"扛住扩展**：`content_types` 扩内容板块，`blocks.kind` 扩展示位——都靠加一行 + `jsonb`，不迁移。
+3. **前台读取直接**：主页 = `profile` + `pages['/'].blocks` + `posts` 列表按 type 过滤；文章页 = `posts` + `post_sections`。
+4. **长期维护简单**：所有可编辑文案/图片都在 `site_settings / profile / pages / blocks / posts` 里，后台是通用 CRUD，不需要为每种新板块开发新表单结构（表单由 `content_types.schema` / `blocks.kind` 驱动）。
+
+本次仅为方案，不建库、不改代码；确认后再进入建表迁移阶段。

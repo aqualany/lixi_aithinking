@@ -54,7 +54,7 @@ function ExperimentDetail() {
   const rootCtx = Route.useRouteContext() as any;
   const { slug } = Route.useParams();
   const expDetail: ExperimentDetailProps | null = rootCtx.expDetail ?? null;
-  const safe = expDetail ?? { num: "", date: "", category: "", title: "", hypothesis: "", optimization: [], selfTraining: [], screenshotUrls: [] };
+  const data = expDetail ?? { num: "", date: "", category: "", title: "", hypothesis: "", optimization: [], selfTraining: [], screenshotUrls: [] };
   const images: string[] = safe.screenshotUrls;
 
   return (

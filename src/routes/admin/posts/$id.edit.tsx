@@ -17,9 +17,9 @@ function PostEditPage() {
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    supabase.from('content_types').select('*').then(({ data }) => { if (data) setTypes(data); });
+    (supabase as any).from('content_types').select('*').then(({ data }: any) => { if (data) setTypes(data); });
     if (!isNew) {
-      supabase.from('posts').select('*, post_sections(*)').eq('id', id).single().then(({ data }) => {
+      (supabase as any).from('posts').select('*, post_sections(*)').eq('id', id).single().then(({ data }: any) => {
         if (data) {
           setForm({ ...data, extra: typeof data.extra === 'object' ? JSON.stringify(data.extra, null, 2) : data.extra });
           setSections(data.post_sections ?? []);
@@ -38,11 +38,11 @@ function PostEditPage() {
     };
     if (!isNew) payload.id = id;
     const session = await supabase.auth.getSession();
-    const { data: saved, error } = await supabase.from('posts').upsert(payload).select('id').single();
+    const { data: saved, error } = await (supabase as any).from('posts').upsert(payload).select('id').single();
     if (error) { setMsg("保存失败: " + error.message); setSaving(false); return; }
     if (sections.length > 0) {
-      await supabase.from('post_sections').delete().eq('post_id', saved.id);
-      await supabase.from('post_sections').insert(sections.map((s, i) => ({ post_id: saved.id, anchor: s.anchor || `sec-${i+1}`, title: s.title, sort_order: i })));
+      await (supabase as any).from('post_sections').delete().eq('post_id', saved.id);
+      await (supabase as any).from('post_sections').insert(sections.map((s, i) => ({ post_id: saved.id, anchor: s.anchor || `sec-${i+1}`, title: s.title, sort_order: i })));
     }
     setMsg("保存成功");
     setSaving(false);

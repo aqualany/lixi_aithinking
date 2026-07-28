@@ -23,7 +23,7 @@ function LoginPage() {
     e.preventDefault(); setLoading(true); setError("");
     const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) { setError(authError.message); setLoading(false); return; }
-    const { data: settings } = await supabase.from('site_settings').select('admin_user_id').limit(1).single();
+    const { data: settings } = await (supabase as any).from("site_settings" as any).select("admin_user_id").limit(1).single();
     if (settings?.admin_user_id !== data.user.id) {
       await supabase.auth.signOut();
       setError("此账号无管理员权限"); setLoading(false); return;

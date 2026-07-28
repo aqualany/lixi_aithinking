@@ -123,7 +123,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 }
 
 const FALLBACK_TITLE = "聂灵晞 · 简历";
-const FALLBACK_SUMMARY = "从 UI 设计与产品出身，逐步转入创作数据与人机协作写作方向。以下按"经历—教育—写作—技能"分列。";
+const FALLBACK_SUMMARY = "从 UI 设计与产品出身，逐步转入创作数据与人机协作写作方向。以下按\"经历—教育—写作—技能\"分列。";
 
 export function Resume({ data }: { data?: ResumeProps }) {
   const d = data ?? {

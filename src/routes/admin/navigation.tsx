@@ -15,21 +15,21 @@ function NavAdminPage() {
   useEffect(() => { load(); }, []);
 
   const load = () => {
-    supabase.from('navigation').select('*').order('sort_order').then(({ data }) => {
+    (supabase as any).from('navigation').select('*').order('sort_order').then(({ data }: any) => {
       if (data) setItems(data);
     });
   };
 
   const save = async (nav: any) => {
     setSaving(true);
-    const { error } = await supabase.from('navigation').upsert(nav);
+    const { error } = await (supabase as any).from("navigation" as any).upsert(nav);
     if (error) setMsg(error.message); else { setMsg("保存成功"); load(); }
     setSaving(false); setEditing(null);
   };
 
   const del = async (id: string) => {
     if (!confirm('确认删除？')) return;
-    await supabase.from('navigation').delete().eq('id', id);
+    await (supabase as any).from("navigation" as any).delete().eq('id', id);
     load();
   };
 

@@ -9,20 +9,20 @@ export const Route = createFileRoute("/admin/posts/")({
 function PostListPage() {
   const [posts, setPosts] = useState<any[]>([]);
   useEffect(() => {
-    supabase.from('posts').select('*, content_types(name)').order('sort_order').then(({ data }) => {
+    (supabase as any).from('posts').select('*, content_types(name)').order('sort_order').then(({ data }: any) => {
       if (data) setPosts(data);
     });
   }, []);
   const del = async (id: string) => {
     if (!confirm('确认删除？')) return;
-    await supabase.from('posts').delete().eq('id', id);
+    await (supabase as any).from("posts" as any).delete().eq('id', id);
     setPosts(posts.filter(p => p.id !== id));
   };
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-neutral-800">文章管理</h1>
-        <Link to="/admin/posts/new" className="rounded bg-neutral-900 px-4 py-2 text-sm text-white">新建</Link>
+        <Link to={"/admin/posts/new" as any} className="rounded bg-neutral-900 px-4 py-2 text-sm text-white">新建</Link>
       </div>
       <table className="w-full text-sm">
         <thead><tr className="border-b text-left text-neutral-500">

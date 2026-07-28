@@ -55,7 +55,7 @@ function ExperimentDetail() {
   const { slug } = Route.useParams();
   const expDetail: ExperimentDetailProps | null = rootCtx.expDetail ?? null;
   const data = expDetail ?? { num: "", date: "", category: "", title: "", hypothesis: "", optimization: [], selfTraining: [], screenshotUrls: [] };
-  const images: string[] = safe.screenshotUrls;
+  const images: string[] = data.screenshotUrls;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -92,7 +92,7 @@ function ExperimentDetail() {
                 提示词优化的过程
               </h2>
               <p className="mt-6 font-serif text-[16px] leading-[1.9] tracking-[0.01em] text-foreground">
-                {data.keyInsight}
+                {data.optimization?.[0] ?? ""}
               </p>
               <ol className="mt-8 space-y-4 border-l border-border pl-6 font-serif text-[15.5px] leading-[1.9] text-foreground">
                 {data.optimization.map((step, i) => (

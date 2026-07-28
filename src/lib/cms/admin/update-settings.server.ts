@@ -6,7 +6,7 @@ export const updateSiteSettings = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     if (!await requireAdmin(data._token)) throw new Error('Unauthorized');
     const { _token, ...settings } = data;
-    const { error } = await ADMIN_CLIENT.from('site_settings').update(settings).eq('id', 'c0000000-0000-0000-0000-000000000001');
+    const { error } = await ADMIN_CLIENT.from('site_settings' as any).update(settings).eq('id', 'c0000000-0000-0000-0000-000000000001');
     if (error) throw new Error(error.message);
     return { ok: true };
   });

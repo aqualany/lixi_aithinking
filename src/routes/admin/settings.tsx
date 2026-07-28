@@ -12,7 +12,7 @@ function SettingsPage() {
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    supabase.from('site_settings').select('*').limit(1).single().then(({ data }) => {
+    (supabase as any).from('site_settings').select('*').limit(1).single().then(({ data }: any) => {
       if (data) setForm(data);
     });
   }, []);
@@ -20,7 +20,7 @@ function SettingsPage() {
   const save = async () => {
     setSaving(true); setMsg("");
     const session = await supabase.auth.getSession();
-    const { error } = await supabase.from('site_settings').update({
+    const { error } = await (supabase as any).from("site_settings" as any).update({
       site_title: form.site_title, site_description: form.site_description,
       author_name: form.author_name, author_name_en: form.author_name_en,
       hero_eyebrow: form.hero_eyebrow, github_url: form.github_url,

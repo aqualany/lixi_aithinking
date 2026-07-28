@@ -14,7 +14,7 @@ export function SectionTabs({
   data,
 }: {
   active: TabId;
-  onChange: (id: TabId) => void;
+  onChange: (id: string) => void;
   data?: SectionTabsProps;
 }) {
   const tabs = data?.tabs ?? FALLBACK_TABS;

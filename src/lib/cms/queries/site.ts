@@ -38,5 +38,5 @@ export async function getAvatarMedia(
     console.error('[CMS] getAvatarMedia failed:', error?.message);
     return null;
   }
-  return data.public_url || null;
+  return (data as any).public_url || null;
 }

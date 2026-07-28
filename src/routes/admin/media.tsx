@@ -14,7 +14,7 @@ function MediaAdminPage() {
   useEffect(() => { load(); }, []);
 
   const load = () => {
-    supabase.from('media').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+    (supabase as any).from('media').select('*').order('created_at', { ascending: false }).then(({ data }: any) => {
       if (data) setFiles(data);
     });
   };
@@ -25,10 +25,10 @@ function MediaAdminPage() {
     setUploading(true); setMsg("");
     const ext = file.name.split('.').pop();
     const path = `uploads/${Date.now()}.${ext}`;
-    const { error: storageErr } = await supabase.storage.from('media').upload(path, file);
+    const { error: storageErr } = await supabase.storage.from("media" as any).upload(path, file);
     if (storageErr) { setMsg("上传失败: " + storageErr.message); setUploading(false); return; }
-    const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
-    const { error: dbErr } = await supabase.from('media').insert({
+    const { data: { publicUrl } } = supabase.storage.from("media" as any).getPublicUrl(path);
+    const { error: dbErr } = await (supabase as any).from("media" as any).insert({
       storage_path: path, public_url: publicUrl, mime_type: file.type, alt: file.name
     });
     if (dbErr) setMsg("入库失败: " + dbErr.message);
@@ -38,8 +38,8 @@ function MediaAdminPage() {
 
   const del = async (id: string, path: string) => {
     if (!confirm('确认删除？')) return;
-    await supabase.storage.from('media').remove([path]);
-    await supabase.from('media').delete().eq('id', id);
+    await supabase.storage.from("media" as any).remove([path]);
+    await (supabase as any).from("media" as any).delete().eq('id', id);
     load();
   };
 

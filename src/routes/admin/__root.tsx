@@ -18,7 +18,7 @@ function AdminLayout() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.navigate({ to: '/admin/login' }); return; }
-      supabase.from('site_settings').select('admin_user_id').limit(1).single().then(({ data }) => {
+      (supabase as any).from("site_settings" as any).select("admin_user_id").limit(1).single().then(({ data }: any) => {
         if (data?.admin_user_id === session.user.id) setUser(session.user);
         else router.navigate({ to: '/admin/login' });
         setChecking(false);

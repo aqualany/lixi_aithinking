@@ -1,8 +1,8 @@
 import type { FooterProps } from "@/lib/cms/types";
 
 const FALLBACK_PROPS: FooterProps = {
-  authorName: "聂蓝玉",
-  authorNameEn: "Nie Lanyu",
+  authorName: "聂灵晞",
+  authorNameEn: "Lixi Nie",
   links: [
     { label: "nielanyu@example.com", href: "mailto:nielanyu@example.com", isExternal: true },
     { label: "GitHub", href: "https://github.com/", isExternal: true },
@@ -23,7 +23,7 @@ export function Footer({ data }: { data?: FooterProps }) {
             &copy; 2026　{d.authorName}　{d.authorNameEn}
           </span>
           <div className="flex flex-wrap gap-x-5">
-            {emailLink && (
+            {emailLink && emailLink.label && (
               <a
                 href={emailLink.href}
                 className="transition-colors hover:text-foreground"
@@ -31,9 +31,9 @@ export function Footer({ data }: { data?: FooterProps }) {
                 {emailLink.label}
               </a>
             )}
-            {githubLink && (
+            {emailLink?.href && !emailLink.href.startsWith('mailto') && (
               <a
-                href={githubLink.href}
+                href={emailLink.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
@@ -46,9 +46,7 @@ export function Footer({ data }: { data?: FooterProps }) {
             )}
           </div>
         </div>
-        <p className="mt-4 font-serif text-[13px] italic tracking-[0.02em] text-muted-foreground">
-          本站正文以思源宋体排版，元数据以思源黑体。感谢阅读。
-        </p>
+        
       </div>
     </footer>
   );

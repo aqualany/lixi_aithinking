@@ -5,13 +5,13 @@ const AVATAR_KEY = "portfolio.avatar";
 
 const FALLBACK_PROPS: HeroProps = {
   authorName: "聂灵晞",
-  authorNameEn: "Nie Lingxi",
+  authorNameEn: "Lixi Nie",
   heroEyebrow: "个人主页 · 最近更新 二〇二六年十一月",
   bioLines: [
-    "写作者，AI 创作探索中。",
-    "曾是六年 UI 设计师。",
-    "兴趣：设计与制作首饰，vibe-coding 产品点子。",
-    "理性分析 & 感性共情的 INFJ。",
+    "写作者，AI 创作探索者。",
+    "曾任六年 UI 设计师，",
+    "持续探索设计、创作与 AI 的融合。",
+    "理性分析，感性共情。",
   ],
   avatarUrl: null,
 };
@@ -23,11 +23,9 @@ export function Hero({ data }: { data?: HeroProps }) {
 
   return (
     <header id="top" className="mx-auto max-w-3xl px-6 pt-32 pb-16">
-      <div className="grid grid-cols-[1fr_auto] items-start gap-8 sm:gap-12">
+      <div className="grid grid-cols-[1fr_auto] items-center gap-8 sm:gap-12">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-            {d.heroEyebrow}
-          </p>
+          
           <h1 className="mt-8 font-zhuque text-[52px] leading-[1.15] tracking-[0.06em] text-foreground sm:text-[68px]">
             {d.authorName}
           </h1>
@@ -35,7 +33,7 @@ export function Hero({ data }: { data?: HeroProps }) {
             {d.authorNameEn}
           </p>
 
-          <div className="mt-8 space-y-2.5 font-serif text-[16.5px] leading-[1.9] tracking-[0.01em] text-foreground">
+          <div className="mt-8 space-y-2.5 font-sans text-[14.5px] leading-[1.9] tracking-[0.01em] text-foreground">
             {d.bioLines.map((line, i) => (
               <p key={i}>{line}</p>
             ))}

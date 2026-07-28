@@ -9,7 +9,7 @@ const FALLBACK_SECTIONS = [
 
 const FALLBACK_PROPS: FixedNavProps = {
   authorName: "聂灵晞",
-  authorNameEn: "Nie Lingxi",
+  authorNameEn: "Lixi Nie",
   sections: FALLBACK_SECTIONS.map((s) => ({
     id: s.id,
     label: s.label,

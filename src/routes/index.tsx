@@ -58,7 +58,7 @@ function Index() {
       <FixedNav activeTab={tab} onTabChange={onChange} data={rootCtx.fixedNavProps ?? undefined} />
       <main>
         <Hero data={rootCtx.heroProps ?? undefined} />
-        <SectionTabs active={tab} onChange={(id: string) => onChange(id as TabId)} data={rootCtx.sectionTabsProps ?? undefined} />
+        <SectionTabs active={tab} onChange={(id: string) => onChange(id as any)} data={rootCtx.sectionTabsProps ?? undefined} />
         {tab === "research" && <ResearchPreview data={rootCtx.researchProps ?? undefined} />}
         {tab === "experiments" && <Experiments data={rootCtx.experimentsListProps ?? undefined} />}
         {tab === "resume" && <Resume data={rootCtx.resumeProps ?? undefined} />}

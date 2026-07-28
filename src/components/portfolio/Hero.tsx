@@ -9,7 +9,7 @@ const FALLBACK_PROPS: HeroProps = {
   heroEyebrow: "个人主页 · 最近更新 二〇二六年十一月",
   bioLines: [
     "写作者，AI 创作探索者。",
-    "曾任六年 UI 设计师，"
+    "曾任六年 UI 设计师，",
     "持续探索设计、创作与 AI 的融合。",
     "理性分析，感性共情。",
   ],

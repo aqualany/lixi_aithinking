@@ -153,3 +153,16 @@ ALTER TABLE public.site_settings
 ALTER TABLE public.posts
   ADD CONSTRAINT fk_posts_cover
   FOREIGN KEY (cover_media_id) REFERENCES public.media(id) ON DELETE SET NULL;
+
+-- ---------------------------------------------------------------
+-- Admin check function (must be created AFTER site_settings table exists)
+-- ---------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY INVOKER
+AS $$
+  SELECT auth.uid() IS NOT NULL
+    AND auth.uid() = (SELECT admin_user_id FROM public.site_settings LIMIT 1)
+$$;

@@ -1,4 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createSsrClient } from "@/lib/cms/supabase.server";
+import { getPageBySlug } from "@/lib/cms/queries/pages";
+import { toPageSeoProps } from "@/lib/cms/mappers";
+import type { PageSeoProps } from "@/lib/cms/types";
 import { useEffect, useState } from "react";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Hero } from "@/components/portfolio/Hero";
@@ -10,22 +14,26 @@ import { Footer } from "@/components/portfolio/Footer";
 import type { FooterProps, HeroProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "聂灵晞 · 写作者 · AI 创作探索" },
-      {
-        name: "description",
-        content:
-          "长文：论 AI 写作与语言理解；实验笔记：现代诗、宋词与小说的提示词迭代；简历：工作经历与联系方式。",
-      },
-      { property: "og:title", content: "聂灵晞 · 个人主页" },
-      {
-        property: "og:description",
-        content:
-          "关于创意数据的长文，一组提示词迭代的实验笔记，以及工作经历。",
-      },
-    ],
-  }),
+  beforeLoad: async (): Promise<{ pageSeo: PageSeoProps | null }> => {
+    try {
+      const supabase = createSsrClient();
+      const page = await getPageBySlug(supabase, 'home');
+      return { pageSeo: page ? toPageSeoProps(page) : null };
+    } catch {
+      return { pageSeo: null };
+    }
+  },
+  head: (ctx) => {
+    const seo = (ctx as any)?.context?.pageSeo ?? null;
+    return {
+      meta: [
+        { title: seo?.title ?? "聂灵晞 · 写作者 · AI 创作探索" },
+        { name: "description", content: seo?.description ?? "" },
+        { property: "og:title", content: seo?.title ?? "聂灵晞 · 个人主页" },
+        { property: "og:description", content: seo?.description ?? "" },
+      ],
+    };
+  },
   component: Index,
 });
 

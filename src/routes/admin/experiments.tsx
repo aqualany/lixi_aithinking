@@ -53,7 +53,7 @@ function ExperimentEditor() {
       const { data: ct } = await (supabase.from('content_types') as any).select('id').eq('slug', 'experiment').single();
       ctId = ct?.id;
     }
-    const payload = {
+    const payload: any = {
       content_type_id: ctId, slug: editing.slug, title: editing.title,
       subtitle: editing.subtitle, summary: editing.summary, body_md: editing.body_md,
       status: editing.status, published_at: editing.published_at || null,

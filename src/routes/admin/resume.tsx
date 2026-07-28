@@ -43,7 +43,7 @@ function ResumeEditor() {
 
   const save = async () => {
     setSaving(true); setMsg("");
-    const payload = {
+    const payload: any = {
       content_type_id: form.content_type_id, slug: form.slug, title: form.title,
       summary: form.summary, status: form.status, sort_order: Number(form.sort_order),
       extra: { experience: form.experience, education: form.education, writings: form.writings, skills: form.skills },

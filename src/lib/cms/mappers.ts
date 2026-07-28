@@ -103,7 +103,9 @@ export function toSiteSeoProps(settings: SiteSettingsRow): PageSeoProps {
 // ── Pages / tabs ──────────────────────────────────────────
 
 export function toSectionTabsProps(pages: PageRow[]): SectionTabsProps {
-  const sorted = [...pages].sort((a, b) => a.sort_order - b.sort_order);
+  // Only section pages (skip landing pages like "home")
+  const sectionPages = pages.filter((p) => p.slug !== 'home');
+  const sorted = [...sectionPages].sort((a, b) => a.sort_order - b.sort_order);
   return {
     tabs: sorted.map((p, i) => ({
       id: p.slug,

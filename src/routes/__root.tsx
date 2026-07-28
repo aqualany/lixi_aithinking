@@ -14,8 +14,10 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { createSsrClient } from "@/lib/cms/supabase.server";
 import { getSiteSettings } from "@/lib/cms/queries/site";
 import { getNavigation } from "@/lib/cms/queries/navigation";
+import { getAllPages } from "@/lib/cms/queries/pages";
+import { toPageSeoProps } from "@/lib/cms/mappers";
 import { toFooterProps, toHeroProps } from "@/lib/cms/mappers";
-import type { SiteSettingsRow, FooterProps, HeroProps } from "@/lib/cms/types";
+import type { SiteSettingsRow, FooterProps, HeroProps, PageSeoProps } from "@/lib/cms/types";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -92,21 +94,28 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     siteSettings: SiteSettingsRow | null;
     heroProps: HeroProps | null;
     footerProps: FooterProps | null;
+    pageSeoMap: Record<string, PageSeoProps>;
   }> => {
     try {
       const supabase = createSsrClient();
-      const [settings, footerNav] = await Promise.all([
+      const [settings, footerNav, allPages] = await Promise.all([
         getSiteSettings(supabase),
         getNavigation(supabase, 'footer'),
+        getAllPages(supabase),
       ]);
+      const pageSeoMap: Record<string, PageSeoProps> = {};
+      for (const page of allPages) {
+        pageSeoMap[page.slug] = toPageSeoProps(page);
+      }
       return {
         siteSettings: settings,
         heroProps: settings ? toHeroProps(settings, null) : null,
         footerProps: settings ? toFooterProps(settings, footerNav) : null,
+        pageSeoMap,
       };
     } catch (e) {
       console.error("[__root] beforeLoad failed:", e);
-      return { siteSettings: null, heroProps: null, footerProps: null };
+      return { siteSettings: null, heroProps: null, footerProps: null, pageSeoMap: {} };
     }
   },
   head: (headContext) => {

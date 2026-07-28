@@ -110,7 +110,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       for (const page of allPages) {
         pageSeoMap[page.slug] = toPageSeoProps(page);
       }
-      const sectionTabs = toSectionTabsProps(allPages);
+      const sectionTabs = toSectionTabsProps(allPages, headerNav);
       return {
         siteSettings: settings,
         heroProps: settings ? toHeroProps(settings, null) : null,

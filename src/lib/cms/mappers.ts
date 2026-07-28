@@ -102,14 +102,27 @@ export function toSiteSeoProps(settings: SiteSettingsRow): PageSeoProps {
 
 // ── Pages / tabs ──────────────────────────────────────────
 
-export function toSectionTabsProps(pages: PageRow[]): SectionTabsProps {
+export function toSectionTabsProps(
+  pages: PageRow[],
+  headerNav?: NavigationRow[],
+): SectionTabsProps {
   // Only section pages (skip landing pages like "home")
   const sectionPages = pages.filter((p) => p.slug !== 'home');
   const sorted = [...sectionPages].sort((a, b) => a.sort_order - b.sort_order);
+
+  // Build a quick lookup: slug → label from header navigation
+  const navLabelMap: Record<string, string> = {};
+  if (headerNav) {
+    for (const nav of headerNav) {
+      const key = nav.href.replace('/#', '');
+      navLabelMap[key] = nav.label;
+    }
+  }
+
   return {
     tabs: sorted.map((p, i) => ({
       id: p.slug,
-      label: p.title,
+      label: navLabelMap[p.slug] ?? p.title,
       hint: padHint(i),
     })),
   };

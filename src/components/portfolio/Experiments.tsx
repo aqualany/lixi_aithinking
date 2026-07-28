@@ -1,4 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import type { ExperimentsListProps, ExperimentCardData } from "@/lib/cms/types";
+
+// ── Backward-compatible exports (still used by experiments.$slug.tsx) ──
 
 export type ExperimentSlug = "wuxia" | "song-ci" | "modern-poetry";
 
@@ -14,26 +17,18 @@ export type ExperimentCase = {
   selfTraining: string[];
 };
 
-export const experiments: ExperimentCase[] = [
+const FALLBACK_CASES: ExperimentCase[] = [
   {
     slug: "wuxia",
     num: "笔记 01",
     date: "2026 · 08",
     category: "武侠小说创作",
-    title: "招式不写“快”：以动作为骨的武侠段落",
+    title: "招式不写"快"：以动作为骨的武侠段落",
     keyInsight:
-      "把“凌厉、迅捷、狠辣”这类形容词禁掉，只允许写身体、器物与呼吸——武打段落从戏剧摘要变成可被读者身体感到的动作。",
-    hypothesis:
-      "武侠段落的“力气”来自动词与关节位置，而非形容词。禁用副词是最小干预。",
-    optimization: [
-      "v1：让模型直接“写一段武打”，产出的是电视剧解说词。",
-      "v2：加入约束“不许使用形容词与副词”，模型开始写身体。",
-      "v3：加入“镜头只跟随一件器物”，画面自动获得节奏与视点。",
-    ],
-    selfTraining: [
-      "把武侠语料按“动作/心理/景物”三层拆开，训练模型学习“留白比例”。",
-      "将修订前后的删除线作为对比样本，教会模型识别“过度描写”。",
-    ],
+      "把"凌厉、迅捷、狠辣"这类形容词禁掉，只允许写身体、器物与呼吸——武打段落从戏剧摘要变成可被读者身体感到的动作。",
+    hypothesis: "武侠段落的"力气"来自动词与关节位置，而非形容词。禁用副词是最小干预。",
+    optimization: ["v1：让模型直接"写一段武打"，产出的是电视剧解说词。", "v2：加入约束"不许使用形容词与副词"，模型开始写身体。", "v3：加入"镜头只跟随一件器物"，画面自动获得节奏与视点。"],
+    selfTraining: ["把武侠语料按"动作/心理/景物"三层拆开，训练模型学习"留白比例"。", "将修订前后的删除线作为对比样本，教会模型识别"过度描写"。"],
   },
   {
     slug: "song-ci",
@@ -42,18 +37,10 @@ export const experiments: ExperimentCase[] = [
     category: "宋词创作",
     title: "以修订轨迹作训练信号：一阕《青玉案》的诞生",
     keyInsight:
-      "让模型看“从初稿到定稿之间被划掉的字”，比只让它看定稿，更能学到什么叫“声音”。取舍即数据。",
-    hypothesis:
-      "词牌的“味”不在字面，而在“为什么这个字而不是那个字”的选择过程。",
-    optimization: [
-      "v1：仿辛弃疾风格作《青玉案》——格律对，用词漂亮而空。",
-      "v2：要求模型给三份候选并说明会划掉哪一份，出现“编辑视角”。",
-      "v3：把定稿当第一稿交给三十年后的自己修订，产出带修订小注的双层文本。",
-    ],
-    selfTraining: [
-      "构造 (草稿, 修订理由, 定稿) 的三元组作为微调样本。",
-      "以“字级别删除线”作为损失函数的注意力权重，让模型学习“克制”。",
-    ],
+      "让模型看"从初稿到定稿之间被划掉的字"，比只让它看定稿，更能学到什么叫"声音"。取舍即数据。",
+    hypothesis: "词牌的"味"不在字面，而在"为什么这个字而不是那个字"的选择过程。",
+    optimization: ["v1：仿辛弃疾风格作《青玉案》——格律对，用词漂亮而空。", "v2：要求模型给三份候选并说明会划掉哪一份，出现"编辑视角"。", "v3：把定稿当第一稿交给三十年后的自己修订，产出带修订小注的双层文本。"],
+    selfTraining: ["构造 (草稿, 修订理由, 定稿) 的三元组作为微调样本。", "以"字级别删除线"作为损失函数的注意力权重，让模型学习"克制"。"],
   },
   {
     slug: "modern-poetry",
@@ -62,22 +49,32 @@ export const experiments: ExperimentCase[] = [
     category: "现代诗创作",
     title: "形式约束下的意象派：只写物，不许写情绪",
     keyInsight:
-      "把“不许写情绪形容词”的负约束显式化，模型从“告诉读者感觉什么”转向“让画面自己承受重量”。",
-    hypothesis:
-      "负约束（不许写什么）比正约束（要写什么）更快把诗从摘要逼进意象。",
-    optimization: [
-      "v1：“写一首关于孤独的现代诗”——抽象、感伤，无落脚点。",
-      "v2：限定“只能用具体物：椅子、雨、灯、杯”，物件到场，句法仍在解释。",
-      "v3：四行，禁一切情绪形容词，只写物——情绪从排布里长出来。",
-    ],
-    selfTraining: [
-      "在语料中给句子标注 show/tell 二值标签，作为可训练的“质地”信号。",
-      "构造“禁用词-输出”成对样本，教会模型在缺失常用词时寻找替代表达。",
-    ],
+      "把"不许写情绪形容词"的负约束显式化，模型从"告诉读者感觉什么"转向"让画面自己承受重量"。",
+    hypothesis: "负约束（不许写什么）比正约束（要写什么）更快把诗从摘要逼进意象。",
+    optimization: ["v1："写一首关于孤独的现代诗"——抽象、感伤，无落脚点。", "v2：限定"只能用具体物：椅子、雨、灯、杯"，物件到场，句法仍在解释。", "v3：四行，禁一切情绪形容词，只写物——情绪从排布里长出来。"],
+    selfTraining: ["在语料中给句子标注 show/tell 二值标签，作为可训练的"质地"信号。", "构造"禁用词-输出"成对样本，教会模型在缺失常用词时寻找替代表达。"],
   },
 ];
 
-export function Experiments() {
+// Keep the export for backward compat (experiments.$slug.tsx imports this)
+export const experiments: ExperimentCase[] = FALLBACK_CASES;
+
+// ── Component ─────────────────────────────────────────────
+
+const FALLBACK_LIST: ExperimentsListProps = {
+  experiments: FALLBACK_CASES.map((c) => ({
+    slug: c.slug,
+    num: c.num,
+    date: c.date,
+    category: c.category,
+    title: c.title,
+    keyInsight: c.keyInsight,
+  })),
+};
+
+export function Experiments({ data }: { data?: ExperimentsListProps }) {
+  const cards: ExperimentCardData[] = data?.experiments ?? FALLBACK_LIST.experiments;
+
   return (
     <section
       id="experiments"
@@ -95,7 +92,7 @@ export function Experiments() {
         </p>
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {experiments.map((e) => (
+          {cards.map((e) => (
             <Link
               key={e.slug}
               to="/experiments/$slug"

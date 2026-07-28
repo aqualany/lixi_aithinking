@@ -153,7 +153,20 @@ INSERT INTO public.posts (
   'published',
   '2026-08-01',
   1,
-  '{"num": "笔记 01", "hypothesis": "武侠段落的\"力气\"来自动词与关节位置，而非形容词。禁用副词是最小干预。", "optimization": ["v1：让模型直接\"写一段武打\"，产出的是电视剧解说词。", "v2：加入约束\"不许使用形容词与副词\"，模型开始写身体。", "v3：加入\"镜头只跟随一件器物\"，画面自动获得节奏与视点。"], "self_training": ["把武侠语料按\"动作/心理/景物\"三层拆开，训练模型学习"留白比例"。", "将修订前后的删除线作为对比样本，教会模型识别\"过度描写\"。"], "screenshot_media_ids": []}'
+  jsonb_build_object(
+    'num', '笔记 01',
+    'hypothesis', '武侠段落的"力气"来自动词与关节位置，而非形容词。禁用副词是最小干预。',
+    'optimization', jsonb_build_array(
+      'v1：让模型直接"写一段武打"，产出的是电视剧解说词。',
+      'v2：加入约束"不许使用形容词与副词"，模型开始写身体。',
+      'v3：加入"镜头只跟随一件器物"，画面自动获得节奏与视点。'
+    ),
+    'self_training', jsonb_build_array(
+      '把武侠语料按"动作/心理/景物"三层拆开，训练模型学习"留白比例"。',
+      '将修订前后的删除线作为对比样本，教会模型识别"过度描写"。'
+    ),
+    'screenshot_media_ids', jsonb_build_array()
+  )
 )
 ON CONFLICT (id) DO UPDATE SET
   content_type_id = EXCLUDED.content_type_id,

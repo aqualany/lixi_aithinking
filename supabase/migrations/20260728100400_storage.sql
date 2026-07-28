@@ -12,21 +12,21 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Storage RLS: storage.objects policies
--- SELECT: public read (bucket is public)
+-- Storage RLS: storage.objects policies (idempotent)
+DROP POLICY IF EXISTS "media_select_anon" ON storage.objects;
 CREATE POLICY "media_select_anon" ON storage.objects
   FOR SELECT USING (bucket_id = 'media');
 
--- INSERT: only admin
+DROP POLICY IF EXISTS "media_insert_admin" ON storage.objects;
 CREATE POLICY "media_insert_admin" ON storage.objects
   FOR INSERT WITH CHECK (
     bucket_id = 'media' AND is_admin()
   );
 
--- UPDATE: only admin
+DROP POLICY IF EXISTS "media_update_admin" ON storage.objects;
 CREATE POLICY "media_update_admin" ON storage.objects
   FOR UPDATE USING (bucket_id = 'media' AND is_admin());
 
--- DELETE: only admin
+DROP POLICY IF EXISTS "media_delete_admin" ON storage.objects;
 CREATE POLICY "media_delete_admin" ON storage.objects
   FOR DELETE USING (bucket_id = 'media' AND is_admin());

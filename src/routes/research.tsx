@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { ResearchFull } from "@/components/portfolio/ResearchArticle";
 import { Footer } from "@/components/portfolio/Footer";
-import type { FooterProps, FixedNavProps } from "@/lib/cms/types";
+import type { FooterProps, FixedNavProps, ResearchFullProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/research")({
   head: (ctx) => {
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/research")({
 });
 
 function ResearchPage() {
-  const rootCtx = Route.useRouteContext() as { footerProps?: FooterProps | null; fixedNavProps?: FixedNavProps | null };
+  const rootCtx = Route.useRouteContext() as { footerProps?: FooterProps | null; fixedNavProps?: FixedNavProps | null; researchProps?: ResearchFullProps | null };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <FixedNav data={rootCtx.fixedNavProps ?? undefined} />
@@ -34,7 +34,7 @@ function ResearchPage() {
             ← 返回主页
           </Link>
         </div>
-        <ResearchFull />
+        <ResearchFull data={rootCtx.researchProps ?? undefined} />
       </main>
       <Footer data={rootCtx.footerProps ?? undefined} />
     </div>

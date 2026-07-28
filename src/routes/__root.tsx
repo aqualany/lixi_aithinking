@@ -15,9 +15,9 @@ import { createSsrClient } from "@/lib/cms/supabase.server";
 import { getSiteSettings } from "@/lib/cms/queries/site";
 import { getNavigation } from "@/lib/cms/queries/navigation";
 import { getAllPages } from "@/lib/cms/queries/pages";
-import { toPageSeoProps } from "@/lib/cms/mappers";
-import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps } from "@/lib/cms/mappers";
-import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, PageSeoProps } from "@/lib/cms/types";
+import { getPostBySlug, getPostSections } from "@/lib/cms/queries/posts";import { toPageSeoProps } from "@/lib/cms/mappers";
+import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps, toResearchFullProps } from "@/lib/cms/mappers";
+import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps, PageSeoProps } from "@/lib/cms/types";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -95,22 +95,30 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     heroProps: HeroProps | null;
     footerProps: FooterProps | null;
     fixedNavProps: FixedNavProps | null;
+    researchProps: ResearchFullProps | null;
     sectionTabsProps: SectionTabsProps | null;
     pageSeoMap: Record<string, PageSeoProps>;
   }> => {
     try {
       const supabase = createSsrClient();
-      const [settings, headerNav, footerNav, allPages] = await Promise.all([
+      const [settings, headerNav, footerNav, allPages, researchPost, researchSections] = await Promise.all([
         getSiteSettings(supabase),
         getNavigation(supabase, 'header'),
         getNavigation(supabase, 'footer'),
         getAllPages(supabase),
+        getPostBySlug(supabase, 'fluent-after'),
+        getPostSections(supabase, 'e0000000-0000-0000-0000-000000000001').catch(() => []),
       ]);
       const pageSeoMap: Record<string, PageSeoProps> = {};
       for (const page of allPages) {
         pageSeoMap[page.slug] = toPageSeoProps(page);
       }
       const sectionTabs = toSectionTabsProps(allPages, headerNav);
+      const researchProps =
+        settings && researchPost && researchSections
+          ? toResearchFullProps(researchPost, researchSections, settings.author_name)
+          : null;
+
       return {
         siteSettings: settings,
         heroProps: settings ? toHeroProps(settings, null) : null,
@@ -118,10 +126,11 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         fixedNavProps: settings && headerNav ? toFixedNavProps(settings, headerNav) : null,
         sectionTabsProps: sectionTabs,
         pageSeoMap,
+        researchProps,
       };
     } catch (e) {
       console.error("[__root] beforeLoad failed:", e);
-      return { siteSettings: null, heroProps: null, footerProps: null, fixedNavProps: null, sectionTabsProps: null, pageSeoMap: {} };
+      return { siteSettings: null, heroProps: null, footerProps: null, fixedNavProps: null, sectionTabsProps: null, researchProps: null, pageSeoMap: {} };
     }
   },
   head: (headContext) => {

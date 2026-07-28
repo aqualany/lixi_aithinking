@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Footer } from "@/components/portfolio/Footer";
 import type { FooterProps, FixedNavProps } from "@/lib/cms/types";
@@ -145,24 +145,7 @@ function ExperimentDetail() {
                 <h2 className="zh-title font-serif text-[24px] leading-[1.4] tracking-[0.02em] text-foreground">
                   与 AI 的往返
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="border border-foreground px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-foreground hover:text-background"
-                >
-                  + 上传截图
-                </button>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => {
-                    onAdd(e.target.files);
-                    e.target.value = "";
-                  }}
-                />
+
               </div>
 
               {images.length === 0 ? (
@@ -183,13 +166,6 @@ function ExperimentDetail() {
                       />
                       <figcaption className="mt-2 flex items-baseline justify-between font-mono text-[11px] tracking-[0.15em] text-muted-foreground">
                         <span>截图 {String(i + 1).padStart(2, "0")}</span>
-                        <button
-                          type="button"
-                          onClick={() => remove(i)}
-                          className="uppercase tracking-[0.2em] transition-colors hover:text-foreground"
-                        >
-                          移除
-                        </button>
                       </figcaption>
                     </figure>
                   ))}

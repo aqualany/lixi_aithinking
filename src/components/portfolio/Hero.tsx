@@ -1,9 +1,27 @@
 import { useEffect, useRef, useState } from "react";
+import type { HeroProps } from "@/lib/cms/types";
 
 const AVATAR_KEY = "portfolio.avatar";
 
-export function Hero() {
-  const [avatar, setAvatar] = useState<string | null>(null);
+const FALLBACK_PROPS: HeroProps = {
+  authorName: "聂灵晞",
+  authorNameEn: "Nie Lingxi",
+  heroEyebrow: "个人主页 · 最近更新 二〇二六年十一月",
+  bioLines: [
+    "写作者，AI 创作探索中。",
+    "曾是六年 UI 设计师。",
+    "兴趣：设计与制作首饰，vibe-coding 产品点子。",
+    "理性分析 & 感性共情的 INFJ。",
+  ],
+  avatarUrl: null,
+};
+
+export function Hero({ data }: { data?: HeroProps }) {
+  const d = data ?? FALLBACK_PROPS;
+
+  const [avatar, setAvatar] = useState<string | null>(
+    d.avatarUrl ?? null,
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -12,6 +30,13 @@ export function Hero() {
       if (saved) setAvatar(saved);
     } catch {}
   }, []);
+
+  // Sync when data.avatarUrl changes (e.g. from SSR)
+  useEffect(() => {
+    if (d.avatarUrl && d.avatarUrl !== avatar) {
+      setAvatar(d.avatarUrl);
+    }
+  }, [d.avatarUrl]);
 
   const onPick = (file: File) => {
     const reader = new FileReader();
@@ -30,20 +55,19 @@ export function Hero() {
       <div className="grid grid-cols-[1fr_auto] items-start gap-8 sm:gap-12">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-            个人主页 · 最近更新 二〇二六年十一月
+            {d.heroEyebrow}
           </p>
           <h1 className="mt-8 font-zhuque text-[52px] leading-[1.15] tracking-[0.06em] text-foreground sm:text-[68px]">
-            聂灵晞
+            {d.authorName}
           </h1>
           <p className="mt-3 font-sans text-xs tracking-[0.28em] text-muted-foreground uppercase">
-            Nie&nbsp;Lingxi
+            {d.authorNameEn}
           </p>
 
           <div className="mt-8 space-y-2.5 font-serif text-[16.5px] leading-[1.9] tracking-[0.01em] text-foreground">
-            <p>写作者，AI 创作探索中。</p>
-            <p>曾是六年 UI 设计师。</p>
-            <p>兴趣：设计与制作首饰，vibe-coding 产品点子。</p>
-            <p>理性分析 &amp; 感性共情的 INFJ。</p>
+            {d.bioLines.map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
           </div>
         </div>
 

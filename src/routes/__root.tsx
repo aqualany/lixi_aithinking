@@ -101,14 +101,14 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   }> => {
     try {
       const supabase = createSsrClient();
-      const [settings, headerNav, footerNav, allPages, researchPost, researchSections] = await Promise.all([
+      const [settings, headerNav, footerNav, allPages, researchPost] = await Promise.all([
         getSiteSettings(supabase),
         getNavigation(supabase, 'header'),
         getNavigation(supabase, 'footer'),
         getAllPages(supabase),
         getPostBySlug(supabase, 'fluent-after'),
-        getPostSections(supabase, 'e0000000-0000-0000-0000-000000000001').catch(() => []),
       ]);
+      const researchSections = researchPost ? await getPostSections(supabase, researchPost.id) : [];
       const pageSeoMap: Record<string, PageSeoProps> = {};
       for (const page of allPages) {
         pageSeoMap[page.slug] = toPageSeoProps(page);

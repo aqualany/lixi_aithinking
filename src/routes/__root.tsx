@@ -16,8 +16,8 @@ import { getSiteSettings } from "@/lib/cms/queries/site";
 import { getNavigation } from "@/lib/cms/queries/navigation";
 import { getAllPages } from "@/lib/cms/queries/pages";
 import { toPageSeoProps } from "@/lib/cms/mappers";
-import { toFooterProps, toHeroProps } from "@/lib/cms/mappers";
-import type { SiteSettingsRow, FooterProps, HeroProps, PageSeoProps } from "@/lib/cms/types";
+import { toFooterProps, toHeroProps, toFixedNavProps } from "@/lib/cms/mappers";
+import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, PageSeoProps } from "@/lib/cms/types";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -94,12 +94,14 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     siteSettings: SiteSettingsRow | null;
     heroProps: HeroProps | null;
     footerProps: FooterProps | null;
+    fixedNavProps: FixedNavProps | null;
     pageSeoMap: Record<string, PageSeoProps>;
   }> => {
     try {
       const supabase = createSsrClient();
-      const [settings, footerNav, allPages] = await Promise.all([
+      const [settings, headerNav, footerNav, allPages] = await Promise.all([
         getSiteSettings(supabase),
+        getNavigation(supabase, 'header'),
         getNavigation(supabase, 'footer'),
         getAllPages(supabase),
       ]);
@@ -111,11 +113,12 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         siteSettings: settings,
         heroProps: settings ? toHeroProps(settings, null) : null,
         footerProps: settings ? toFooterProps(settings, footerNav) : null,
+        fixedNavProps: settings && headerNav ? toFixedNavProps(settings, headerNav) : null,
         pageSeoMap,
       };
     } catch (e) {
       console.error("[__root] beforeLoad failed:", e);
-      return { siteSettings: null, heroProps: null, footerProps: null, pageSeoMap: {} };
+      return { siteSettings: null, heroProps: null, footerProps: null, fixedNavProps: null, pageSeoMap: {} };
     }
   },
   head: (headContext) => {

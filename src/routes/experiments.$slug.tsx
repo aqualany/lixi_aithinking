@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Footer } from "@/components/portfolio/Footer";
 import type { FooterProps, FixedNavProps } from "@/lib/cms/types";
-
-
-
+import { createSsrClient } from "@/lib/cms/supabase.server";
+import { getPostBySlug } from "@/lib/cms/queries/posts";
+import { getMediaByIds } from "@/lib/cms/queries/media";
+import { toExperimentDetailProps } from "@/lib/cms/mappers";
+import type { ExperimentDetailProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/experiments/$slug")({
   beforeLoad: async ({ params }): Promise<{ expDetail: ExperimentDetailProps | null }> => {

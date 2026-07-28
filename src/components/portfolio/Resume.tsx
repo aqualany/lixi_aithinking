@@ -1,3 +1,5 @@
+import type { ResumeProps } from "@/lib/cms/types";
+
 type Entry = {
   year: string;
   role: string;
@@ -120,7 +122,18 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
-export function Resume() {
+const FALLBACK_TITLE = "聂灵晞 · 简历";
+const FALLBACK_SUMMARY = "从 UI 设计与产品出身，逐步转入创作数据与人机协作写作方向。以下按"经历—教育—写作—技能"分列。";
+
+export function Resume({ data }: { data?: ResumeProps }) {
+  const d = data ?? {
+    title: FALLBACK_TITLE,
+    summary: FALLBACK_SUMMARY,
+    experience,
+    education,
+    writings,
+    skills,
+  };
   return (
     <section
       id="resume"
@@ -131,23 +144,23 @@ export function Resume() {
           简历 · 03
         </p>
         <h2 className="mt-6 zh-title font-serif text-[36px] leading-[1.35] tracking-[0.02em] text-foreground sm:text-[44px]">
-          聂蓝玉 · 简历
+          {d.title}
         </h2>
         <p className="mt-6 font-serif text-[16px] leading-[1.9] tracking-[0.01em] text-muted-foreground">
           从 UI 设计与产品出身，逐步转入创作数据与人机协作写作方向。以下按&ldquo;经历—教育—写作—技能&rdquo;分列。
         </p>
 
         <Section label="工作经历">
-          <CVList entries={experience} />
+          <CVList entries={d.experience} />
         </Section>
 
         <Section label="教育">
-          <CVList entries={education} />
+          <CVList entries={d.education} />
         </Section>
 
         <Section label="部分写作">
           <ol className="space-y-5">
-            {writings.map((w) => (
+            {d.writings.map((w) => (
               <li
                 key={w.title}
                 className="grid gap-x-6 gap-y-1 md:grid-cols-[7rem_1fr]"
@@ -170,7 +183,7 @@ export function Resume() {
 
         <Section label="工作方法 / 技能">
           <ul className="grid grid-cols-2 gap-x-6 gap-y-2 font-serif text-[15.5px] leading-[1.85] text-foreground sm:grid-cols-2">
-            {skills.map((s) => (
+            {d.skills.map((s) => (
               <li key={s} className="before:content-['—'] before:mr-2 before:text-muted-foreground">
                 {s}
               </li>

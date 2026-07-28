@@ -7,20 +7,17 @@ import type { FooterProps } from "@/lib/cms/types";
 import { experiments, type ExperimentSlug } from "@/components/portfolio/Experiments";
 
 export const Route = createFileRoute("/experiments/$slug")({
-  head: () => ({
-    meta: [
-      { title: "实验笔记 · 聂灵晞" },
-      {
-        name: "description",
-        content: "AI 创作实验笔记：与模型协作的完整过程与自训练思路。",
-      },
-      { property: "og:title", content: "实验笔记 · 聂灵晞" },
-      {
-        property: "og:description",
-        content: "提示词优化的过程记录与从中提炼的 AI 自训练思路。",
-      },
-    ],
-  }),
+  head: (ctx) => {
+    const seo = (ctx as any)?.context?.pageSeoMap?.["experiments"] ?? null;
+    return {
+      meta: [
+        { title: seo?.title ?? "实验笔记 · 聂灵晞" },
+        { name: "description", content: seo?.description ?? "AI 创作实验笔记：与模型协作的完整过程与自训练思路。" },
+        { property: "og:title", content: seo?.title ?? "实验笔记 · 聂灵晞" },
+        { property: "og:description", content: seo?.description ?? "提示词优化的过程记录与从中提炼的 AI 自训练思路。" },
+      ],
+    };
+  },
   loader: ({ params }) => {
     const found = experiments.find((e) => e.slug === params.slug);
     if (!found) throw notFound();

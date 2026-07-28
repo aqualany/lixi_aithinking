@@ -11,7 +11,7 @@ export async function getPostsByContentType(
 ): Promise<PostRow[]> {
   const { data, error } = await supabase
     .from('posts')
-    .select('*')
+    .select('*, content_types!inner(slug)')
     .eq('content_types.slug', contentTypeSlug)
     .eq('status', 'published')
     .order('sort_order', { ascending: true });

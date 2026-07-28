@@ -113,7 +113,8 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         getPostBySlug(supabase, 'main'),
       ]);
       const researchSections = researchPost ? await getPostSections(supabase, researchPost.id) : [];
-      const experimentsListProps: ExperimentsListProps | null = expPosts ? { experiments: toExperimentCardData, toResumeProps(expPosts) } : null;
+      const experimentsListProps: ExperimentsListProps | null = expPosts ? { experiments: toExperimentCardData(expPosts) } : null;
+      const resumeProps: ResumeProps | null = resumePost ? toResumeProps(resumePost) : null;
       const pageSeoMap: Record<string, PageSeoProps> = {};
       for (const page of allPages) {
         pageSeoMap[page.slug] = toPageSeoProps(page);

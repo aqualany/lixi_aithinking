@@ -9,8 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as Admin_rootRouteImport } from './routes/admin/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ResearchRouteImport } from './routes/research'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
@@ -21,13 +21,14 @@ import { Route as ExperimentsSlugRouteImport } from './routes/experiments.$slug'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminPostsIdEditRouteImport } from './routes/admin/posts/$id.edit'
 
-const Admin_rootRoute = Admin_rootRouteImport.update({
-  id: '/admin/__root',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResearchRoute = ResearchRouteImport.update({
@@ -36,29 +37,29 @@ const ResearchRoute = ResearchRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
-  id: '/admin/login',
-  path: '/admin/login',
-  getParentRoute: () => rootRouteImport,
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminMediaRoute = AdminMediaRouteImport.update({
-  id: '/admin/media',
-  path: '/admin/media',
-  getParentRoute: () => rootRouteImport,
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminNavigationRoute = AdminNavigationRouteImport.update({
-  id: '/admin/navigation',
-  path: '/admin/navigation',
-  getParentRoute: () => rootRouteImport,
+  id: '/navigation',
+  path: '/navigation',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/admin/settings',
-  path: '/admin/settings',
-  getParentRoute: () => rootRouteImport,
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ExperimentsSlugRoute = ExperimentsSlugRouteImport.update({
   id: '/experiments/$slug',
@@ -66,20 +67,20 @@ const ExperimentsSlugRoute = ExperimentsSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPostsIndexRoute = AdminPostsIndexRouteImport.update({
-  id: '/admin/posts/',
-  path: '/admin/posts/',
-  getParentRoute: () => rootRouteImport,
+  id: '/posts/',
+  path: '/posts/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminPostsIdEditRoute = AdminPostsIdEditRouteImport.update({
-  id: '/admin/posts/$id/edit',
-  path: '/admin/posts/$id/edit',
-  getParentRoute: () => rootRouteImport,
+  id: '/posts/$id/edit',
+  path: '/posts/$id/edit',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/research': typeof ResearchRoute
-  '/admin': typeof Admin_rootRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
@@ -92,20 +93,20 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/research': typeof ResearchRoute
-  '/admin': typeof AdminIndexRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/posts/$id/edit': typeof AdminPostsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/research': typeof ResearchRoute
-  '/admin/__root': typeof Admin_rootRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
@@ -119,8 +120,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/research'
     | '/admin'
+    | '/research'
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
@@ -133,19 +134,19 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/research'
-    | '/admin'
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
     | '/admin/settings'
     | '/experiments/$slug'
+    | '/admin'
     | '/admin/posts'
     | '/admin/posts/$id/edit'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/research'
-    | '/admin/__root'
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
@@ -158,32 +159,25 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   ResearchRoute: typeof ResearchRoute
-  Admin_rootRoute: typeof Admin_rootRoute
-  AdminLoginRoute: typeof AdminLoginRoute
-  AdminMediaRoute: typeof AdminMediaRoute
-  AdminNavigationRoute: typeof AdminNavigationRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
   ExperimentsSlugRoute: typeof ExperimentsSlugRoute
-  AdminIndexRoute: typeof AdminIndexRoute
-  AdminPostsIndexRoute: typeof AdminPostsIndexRoute
-  AdminPostsIdEditRoute: typeof AdminPostsIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/admin/__root': {
-      id: '/admin/__root'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof Admin_rootRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/research': {
@@ -195,38 +189,38 @@ declare module '@tanstack/react-router' {
     }
     '/admin/': {
       id: '/admin/'
-      path: '/admin'
+      path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/login': {
       id: '/admin/login'
-      path: '/admin/login'
+      path: '/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/media': {
       id: '/admin/media'
-      path: '/admin/media'
+      path: '/media'
       fullPath: '/admin/media'
       preLoaderRoute: typeof AdminMediaRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/navigation': {
       id: '/admin/navigation'
-      path: '/admin/navigation'
+      path: '/navigation'
       fullPath: '/admin/navigation'
       preLoaderRoute: typeof AdminNavigationRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/settings': {
       id: '/admin/settings'
-      path: '/admin/settings'
+      path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/experiments/$slug': {
       id: '/experiments/$slug'
@@ -237,33 +231,48 @@ declare module '@tanstack/react-router' {
     }
     '/admin/posts/': {
       id: '/admin/posts/'
-      path: '/admin/posts'
+      path: '/posts'
       fullPath: '/admin/posts/'
       preLoaderRoute: typeof AdminPostsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/posts/$id/edit': {
       id: '/admin/posts/$id/edit'
-      path: '/admin/posts/$id/edit'
+      path: '/posts/$id/edit'
       fullPath: '/admin/posts/$id/edit'
       preLoaderRoute: typeof AdminPostsIdEditRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ResearchRoute: ResearchRoute,
-  Admin_rootRoute: Admin_rootRoute,
+interface AdminRouteChildren {
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminMediaRoute: typeof AdminMediaRoute
+  AdminNavigationRoute: typeof AdminNavigationRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminPostsIndexRoute: typeof AdminPostsIndexRoute
+  AdminPostsIdEditRoute: typeof AdminPostsIdEditRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminNavigationRoute: AdminNavigationRoute,
   AdminSettingsRoute: AdminSettingsRoute,
-  ExperimentsSlugRoute: ExperimentsSlugRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminPostsIndexRoute: AdminPostsIndexRoute,
   AdminPostsIdEditRoute: AdminPostsIdEditRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  ResearchRoute: ResearchRoute,
+  ExperimentsSlugRoute: ExperimentsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

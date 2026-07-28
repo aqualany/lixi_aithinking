@@ -16,8 +16,8 @@ import { getSiteSettings } from "@/lib/cms/queries/site";
 import { getNavigation } from "@/lib/cms/queries/navigation";
 import { getAllPages } from "@/lib/cms/queries/pages";
 import { toPageSeoProps } from "@/lib/cms/mappers";
-import { toFooterProps, toHeroProps, toFixedNavProps } from "@/lib/cms/mappers";
-import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, PageSeoProps } from "@/lib/cms/types";
+import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps } from "@/lib/cms/mappers";
+import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, PageSeoProps } from "@/lib/cms/types";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -95,6 +95,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     heroProps: HeroProps | null;
     footerProps: FooterProps | null;
     fixedNavProps: FixedNavProps | null;
+    sectionTabsProps: SectionTabsProps | null;
     pageSeoMap: Record<string, PageSeoProps>;
   }> => {
     try {
@@ -109,16 +110,18 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       for (const page of allPages) {
         pageSeoMap[page.slug] = toPageSeoProps(page);
       }
+      const sectionTabs = toSectionTabsProps(allPages);
       return {
         siteSettings: settings,
         heroProps: settings ? toHeroProps(settings, null) : null,
         footerProps: settings ? toFooterProps(settings, footerNav) : null,
         fixedNavProps: settings && headerNav ? toFixedNavProps(settings, headerNav) : null,
+        sectionTabsProps: sectionTabs,
         pageSeoMap,
       };
     } catch (e) {
       console.error("[__root] beforeLoad failed:", e);
-      return { siteSettings: null, heroProps: null, footerProps: null, fixedNavProps: null, pageSeoMap: {} };
+      return { siteSettings: null, heroProps: null, footerProps: null, fixedNavProps: null, sectionTabsProps: null, pageSeoMap: {} };
     }
   },
   head: (headContext) => {

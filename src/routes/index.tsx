@@ -7,7 +7,7 @@ import { ResearchPreview } from "@/components/portfolio/ResearchArticle";
 import { Experiments } from "@/components/portfolio/Experiments";
 import { Resume } from "@/components/portfolio/Resume";
 import { Footer } from "@/components/portfolio/Footer";
-import type { FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps } from "@/lib/cms/types";
+import type { FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps, ExperimentsListProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/")({
   head: (ctx) => {
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const rootCtx = Route.useRouteContext() as { heroProps?: HeroProps | null; footerProps?: FooterProps | null; fixedNavProps?: FixedNavProps | null; sectionTabsProps?: SectionTabsProps | null; researchProps?: ResearchFullProps | null };
+  const rootCtx = Route.useRouteContext() as { heroProps?: HeroProps | null; footerProps?: FooterProps | null; fixedNavProps?: FixedNavProps | null; sectionTabsProps?: SectionTabsProps | null; researchProps?: ResearchFullProps | null; experimentsListProps?: ExperimentsListProps | null };
   const [tab, setTab] = useState<TabId>("research");
 
   useEffect(() => {
@@ -60,7 +60,7 @@ function Index() {
         <Hero data={rootCtx.heroProps ?? undefined} />
         <SectionTabs active={tab} onChange={onChange} data={rootCtx.sectionTabsProps ?? undefined} />
         {tab === "research" && <ResearchPreview data={rootCtx.researchProps ?? undefined} />}
-        {tab === "experiments" && <Experiments />}
+        {tab === "experiments" && <Experiments data={rootCtx.experimentsListProps ?? undefined} />}
         {tab === "resume" && <Resume />}
       </main>
       <Footer data={rootCtx.footerProps ?? undefined} />

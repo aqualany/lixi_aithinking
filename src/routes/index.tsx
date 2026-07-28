@@ -7,7 +7,7 @@ import { ResearchPreview } from "@/components/portfolio/ResearchArticle";
 import { Experiments } from "@/components/portfolio/Experiments";
 import { Resume } from "@/components/portfolio/Resume";
 import { Footer } from "@/components/portfolio/Footer";
-import type { FooterProps } from "@/lib/cms/types";
+import type { FooterProps, HeroProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   // Read root route context (from __root.tsx beforeLoad)
-  const rootCtx = Route.useRouteContext() as { footerProps?: FooterProps | null };
+  const rootCtx = Route.useRouteContext() as { heroProps?: HeroProps | null; footerProps?: FooterProps | null };
   const [tab, setTab] = useState<TabId>("research");
 
   useEffect(() => {
@@ -57,7 +57,7 @@ function Index() {
     <div className="min-h-screen bg-background text-foreground">
       <FixedNav activeTab={tab} onTabChange={onChange} />
       <main>
-        <Hero />
+        <Hero data={rootCtx.heroProps ?? undefined} />
         <SectionTabs active={tab} onChange={onChange} />
         {tab === "research" && <ResearchPreview />}
         {tab === "experiments" && <Experiments />}

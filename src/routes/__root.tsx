@@ -14,8 +14,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { createSsrClient } from "@/lib/cms/supabase.server";
 import { getSiteSettings } from "@/lib/cms/queries/site";
 import { getNavigation } from "@/lib/cms/queries/navigation";
-import { toFooterProps } from "@/lib/cms/mappers";
-import type { SiteSettingsRow, FooterProps } from "@/lib/cms/types";
+import { toFooterProps, toHeroProps } from "@/lib/cms/mappers";
+import type { SiteSettingsRow, FooterProps, HeroProps } from "@/lib/cms/types";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -90,6 +90,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   // SSR loader: fetch site_settings before any page renders
   beforeLoad: async (): Promise<{
     siteSettings: SiteSettingsRow | null;
+    heroProps: HeroProps | null;
     footerProps: FooterProps | null;
   }> => {
     try {
@@ -100,11 +101,12 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       ]);
       return {
         siteSettings: settings,
+        heroProps: settings ? toHeroProps(settings, null) : null,
         footerProps: settings ? toFooterProps(settings, footerNav) : null,
       };
     } catch (e) {
       console.error("[__root] beforeLoad failed:", e);
-      return { siteSettings: null, footerProps: null };
+      return { siteSettings: null, heroProps: null, footerProps: null };
     }
   },
   head: (headContext) => {

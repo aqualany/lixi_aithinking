@@ -13,9 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ResearchRouteImport } from './routes/research'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminExperimentsRouteImport } from './routes/admin/experiments'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminNavigationRouteImport } from './routes/admin/navigation'
+import { Route as AdminResumeRouteImport } from './routes/admin/resume'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as ExperimentsSlugRouteImport } from './routes/experiments.$slug'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
@@ -41,6 +43,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminExperimentsRoute = AdminExperimentsRouteImport.update({
+  id: '/experiments',
+  path: '/experiments',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -54,6 +61,11 @@ const AdminMediaRoute = AdminMediaRouteImport.update({
 const AdminNavigationRoute = AdminNavigationRouteImport.update({
   id: '/navigation',
   path: '/navigation',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminResumeRoute = AdminResumeRouteImport.update({
+  id: '/resume',
+  path: '/resume',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
@@ -81,9 +93,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/research': typeof ResearchRoute
+  '/admin/experiments': typeof AdminExperimentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/resume': typeof AdminResumeRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -93,9 +107,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/research': typeof ResearchRoute
+  '/admin/experiments': typeof AdminExperimentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/resume': typeof AdminResumeRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
   '/admin': typeof AdminIndexRoute
@@ -107,9 +123,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/research': typeof ResearchRoute
+  '/admin/experiments': typeof AdminExperimentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/resume': typeof AdminResumeRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -122,9 +140,11 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/research'
+    | '/admin/experiments'
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
+    | '/admin/resume'
     | '/admin/settings'
     | '/experiments/$slug'
     | '/admin/'
@@ -134,9 +154,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/research'
+    | '/admin/experiments'
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
+    | '/admin/resume'
     | '/admin/settings'
     | '/experiments/$slug'
     | '/admin'
@@ -147,9 +169,11 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/research'
+    | '/admin/experiments'
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
+    | '/admin/resume'
     | '/admin/settings'
     | '/experiments/$slug'
     | '/admin/'
@@ -194,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/experiments': {
+      id: '/admin/experiments'
+      path: '/experiments'
+      fullPath: '/admin/experiments'
+      preLoaderRoute: typeof AdminExperimentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/login'
@@ -213,6 +244,13 @@ declare module '@tanstack/react-router' {
       path: '/navigation'
       fullPath: '/admin/navigation'
       preLoaderRoute: typeof AdminNavigationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/resume': {
+      id: '/admin/resume'
+      path: '/resume'
+      fullPath: '/admin/resume'
+      preLoaderRoute: typeof AdminResumeRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/settings': {
@@ -247,9 +285,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminExperimentsRoute: typeof AdminExperimentsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminNavigationRoute: typeof AdminNavigationRoute
+  AdminResumeRoute: typeof AdminResumeRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminPostsIndexRoute: typeof AdminPostsIndexRoute
@@ -257,9 +297,11 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminExperimentsRoute: AdminExperimentsRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminNavigationRoute: AdminNavigationRoute,
+  AdminResumeRoute: AdminResumeRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminPostsIndexRoute: AdminPostsIndexRoute,

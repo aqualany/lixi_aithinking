@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { to: "/admin", label: "仪表盘", icon: "▣" },
   { to: "/admin/settings", label: "站点配置", icon: "⚙" },
   { to: "/admin/posts", label: "文章管理", icon: "◇" },
+  { to: "/admin/experiments", label: "实验笔记", icon: "△" },
+  { to: "/admin/resume", label: "简历管理", icon: "○" },
   { to: "/admin/navigation", label: "导航管理", icon: "☰" },
   { to: "/admin/media", label: "媒体库", icon: "◫" },
 ];

@@ -1,101 +1,157 @@
-# 轻量 CMS 数据库最终方案 v3（单作者 · 单管理员）
+# 轻量 CMS 数据库最终方案 v4（单作者 · 单管理员）
 
-在上一版基础上做三处微调：`custom_blocks` 增加 `page_id`、`content_types.schema` 明确为预留字段、`admin_user_id` 明确只由 SQL 初始化。本轮**不建库、不生成 SQL、不改代码**。
+仅为方案文档。不建库、不生成 SQL、不改代码。
 
-## 一、表清单（8 张，不变）
+## 一、表清单（共 8 张）
 
-```text
-site_settings    站点单例 + 作者信息 + admin_user_id
-pages            页面：/、/research、/experiments/[slug] 等
-navigation       后台可编辑的导航项（顶部 / 移动端 / Footer）
-content_types    内容类型注册（schema 预留，第一阶段不使用）
-posts            所有长文内容（draft / published / archived）
-post_sections    文章内小节（目录 / 锚点）
-media            上传的图片和资源
-custom_blocks    图片入口模块（隶属于某个 page）
-```
+1. `site_settings` — 站点信息 + 作者信息 + 管理员锚点（单行）
+2. `pages` — 页面注册表（首页 / research / experiments / resume 等）
+3. `navigation` — 顶部导航、移动端导航、Footer 链接
+4. `content_types` — 内容类型注册表（研究文章 / 实验笔记 / 思考文章 / 未来扩展）
+5. `posts` — 所有长文内容（统一表）
+6. `post_sections` — 文章章节 / 目录 / 锚点
+7. `media` — 图片与素材
+8. `custom_blocks` — 简单图片入口模块（广告位 / 外链 / 推荐 / 按钮 / 图片卡片）
 
-## 二、本轮字段变化
+## 二、字段设计
 
-### 2.1 custom_blocks（增加 page_id）
+### 1. site_settings（单行）
+- `id` uuid PK
+- `site_title` text
+- `site_description` text
+- `seo_keywords` text[]
+- `author_name` text（聂灵晞）
+- `bio_lines` text[]（Hero 简介行）
+- `tags` text[]（INFJ / 写作者 等）
+- `avatar_media_id` uuid FK → media
+- `github_url` text
+- `contact_email` text
+- `admin_user_id` uuid — **唯一管理员 auth.users.id，仅通过 SQL 手动初始化**
+- `created_at` / `updated_at`
 
-用途仍限定为：**简单图片入口卡片**。不承担页面搭建、富文本、动态类型职责。
+### 2. pages
+- `id` uuid PK
+- `slug` text unique（`home` / `research` / `experiments` / `resume`）
+- `title` text
+- `description` text
+- `is_visible` boolean
+- `sort_order` int
+- `created_at` / `updated_at`
 
-| 字段 | 类型 | 用途 |
-|---|---|---|
-| id | uuid PK | |
-| page_id | uuid FK → pages | 所属页面 |
-| title | text (nullable) | 卡片标题，可选 |
-| image_media_id | uuid FK → media | 卡片图片 |
-| link_url | text | 跳转链接（内部或外部） |
-| placement | text | 页面内位置（如 `bottom` / `sidebar` / `hero`） |
-| sort_order | int | 同一 (page_id, placement) 内排序 |
-| is_visible | boolean | 显示开关 |
-| created_at / updated_at | timestamptz | |
+### 3. navigation
+- `id` uuid PK
+- `location` text enum（`header` / `mobile` / `footer`）
+- `label` text
+- `href` text（内部 slug 或外部 URL）
+- `is_external` boolean
+- `sort_order` int
+- `is_visible` boolean
+- `created_at` / `updated_at`
 
-组合示例：
-- `page_id = 首页, placement = bottom`
-- `page_id = research, placement = sidebar`
+### 4. content_types
+- `id` uuid PK
+- `slug` text unique（`research` / `experiment` / `thought` / …）
+- `name` text
+- `description` text
+- `schema` jsonb — **仅预留，第一阶段不生成动态表单，后台不开放 JSON 编辑**
+- `sort_order` int
+- `created_at` / `updated_at`
 
-明确不引入：`kind` / `extra` / 动态 block 类型 / 富文本 / 页面搭建。
+### 5. posts
+- `id` uuid PK
+- `content_type_id` uuid FK → content_types
+- `slug` text unique
+- `title` text
+- `subtitle` text
+- `summary` text
+- `cover_media_id` uuid FK → media
+- `body_md` text（正文 Markdown）
+- `status` text enum（`draft` / `published` / `archived`）
+- `published_at` timestamptz
+- `sort_order` int
+- `extra` jsonb — **第一阶段仅预留，不生成后台 JSON 编辑入口**
+- `created_at` / `updated_at`
 
-### 2.2 content_types.schema（说明补充，字段不变）
+### 6. post_sections
+- `id` uuid PK
+- `post_id` uuid FK → posts
+- `anchor` text（锚点 id）
+- `title` text
+- `sort_order` int
+- `created_at` / `updated_at`
 
-| 字段 | 说明 |
-|---|---|
-| schema | jsonb，**仅为未来扩展预留**。第一阶段不据此生成动态表单，后台仅用通用字段编辑，不开放 JSON 直接编辑界面。 |
+### 7. media
+- `id` uuid PK
+- `storage_path` text（Supabase Storage 路径）
+- `public_url` text
+- `alt` text
+- `width` int / `height` int
+- `mime_type` text
+- `created_at` / `updated_at`
 
-### 2.3 site_settings.admin_user_id（说明补充，字段不变）
-
-- 类型：`uuid`，指向 Supabase Auth 中的唯一管理员。
-- **只在初始化数据库时通过 SQL 手动写入一次**。
-- CMS 后台**不提供**修改 `admin_user_id` 的入口；对应 UPDATE 策略需在写入策略中显式排除该列（迁移阶段再落实，通过触发器或 column-level 处理）。
+### 8. custom_blocks
+- `id` uuid PK
+- `page_id` uuid FK → pages
+- `title` text（可选）
+- `image_media_id` uuid FK → media
+- `link_url` text
+- `placement` text（如 `top` / `sidebar` / `bottom`）
+- `sort_order` int
+- `is_visible` boolean
+- `created_at` / `updated_at`
 
 ## 三、关系图
 
 ```text
-site_settings ──> media (avatar)
-site_settings.admin_user_id ──> auth.users (逻辑指向，不建 FK)
+site_settings ──▶ media (avatar_media_id)
 
-content_types 1──n posts 1──n post_sections
-                   posts n──1 media (cover)
+content_types ──▶ posts ──▶ post_sections
+                     │
+                     └──▶ media (cover_media_id)
 
-pages 1──n custom_blocks n──1 media
-navigation  (独立表，无外键)
+pages ──▶ custom_blocks ──▶ media (image_media_id)
+
+navigation  (独立)
+media       (独立资源池)
 ```
 
-## 四、权限设计（单管理员，不变）
+## 四、RLS 权限设计
 
-原则：**前台完全公开读，写入仅登录管理员**。不使用 `user_roles` / `app_role` / `has_role()` / `SECURITY DEFINER` / 多角色体系。
+原则：**前台公开读；管理员写；管理员可读全部草稿/归档**。
 
-管理员判定统一使用：
-```
+判定管理员：
+```sql
 auth.uid() = (SELECT admin_user_id FROM public.site_settings LIMIT 1)
 ```
 
-| 表 | anon SELECT | authenticated SELECT | 写入 |
-|---|---|---|---|
-| site_settings | ✅ | ✅ | 仅管理员，且禁止修改 `admin_user_id` |
-| pages | ✅ | ✅ | 仅管理员 |
-| navigation | ✅ 仅 `is_visible` | ✅ 全部 | 仅管理员 |
-| content_types | ✅ | ✅ | 仅管理员 |
-| posts | ✅ 仅 `status='published'` | ✅ 同 anon | 仅管理员 |
-| post_sections | ✅ 若父 post 已发布 | 同上 | 仅管理员 |
-| media | ✅ | ✅ | 仅管理员 |
-| custom_blocks | ✅ 仅 `is_visible` | ✅ 全部 | 仅管理员 |
+### 读策略
+- `site_settings` / `pages` / `navigation` / `content_types` / `media`：`anon` + `authenticated` 均可读（`is_visible` 由应用层筛选）。
+- `posts`：
+  - `anon`：仅 `status = 'published'`
+  - `authenticated`（管理员）：可读 `draft` / `published` / `archived` 全部
+- `post_sections`：
+  - `anon`：仅当父 post 为 `published`
+  - `authenticated`（管理员）：全部可读
+- `custom_blocks`：`anon` 仅 `is_visible = true`；`authenticated` 全部。
 
-补充：
-- 每张 public 表均 `ENABLE ROW LEVEL SECURITY` + 显式 `GRANT`（anon / authenticated / service_role 按上表分配）。
-- Storage `media` bucket：public read；写入策略同为 `auth.uid() = site_settings.admin_user_id`。
-- `service_role` 全表 `GRANT ALL`。
+### 写策略
+所有 INSERT / UPDATE / DELETE：仅当 `auth.uid() = site_settings.admin_user_id`。
 
-## 五、扩展点（不变）
+### admin_user_id 保护（trigger 方案，不使用 column-level 权限）
+- 在 `site_settings` 上加 `BEFORE UPDATE` 触发器：若 `NEW.admin_user_id IS DISTINCT FROM OLD.admin_user_id`，`RAISE EXCEPTION`。
+- 初始化通过 SQL 手动 `UPDATE site_settings SET admin_user_id = '<uuid>'`（在 trigger 创建之前，或临时禁用 trigger）。
+- 后台 UI 不暴露该字段编辑入口。
 
-- 新增内容板块 → `content_types` 增行 + `posts.extra jsonb` 存该类型专属字段。
-- 新增导航位置 → `navigation.location` 增取值。
-- 新增图片入口位置 → `custom_blocks.placement` 增取值 / 或新增 `pages` 行。
+### Storage
+- 桶（如 `media`）：公开读；写入 / 更新 / 删除仅 `auth.uid() = admin_user_id`。
 
-## 六、说明
+## 五、不做的事（明确边界）
+- 不创建 `user_roles` / `app_role` / `has_role()` / SECURITY DEFINER / 多角色体系。
+- `custom_blocks` 不承担页面搭建 / 富文本 / 动态类型。
+- `content_types.schema` 与 `posts.extra` 第一阶段不生成动态表单或 JSON 编辑 UI。
+- 后台不允许修改 `admin_user_id`（由 DB trigger 强制）。
 
-- 本轮仅方案定稿 v3，不建库、不生成 SQL、不改代码。
-- 由于本项目连接的是外部 Supabase（非 Lovable Cloud），后续迁移 SQL 需你在自己的 Supabase SQL Editor 中执行。
+## 六、后续
+方案确认后，若需要执行，我可以：
+- 输出可粘贴到你自己 Supabase SQL Editor 的完整 migration SQL（含 GRANT / RLS / trigger）；
+- 之后再对接前端 CMS 页面。当前不动数据库、不改代码。

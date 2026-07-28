@@ -1,20 +1,34 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import type { FixedNavProps } from "@/lib/cms/types";
 
-const sections = [
+const FALLBACK_SECTIONS = [
   { id: "research", label: "研究" },
   { id: "experiments", label: "实验" },
   { id: "resume", label: "简历" },
-] as const;
+];
 
-type SectionId = (typeof sections)[number]["id"];
+const FALLBACK_PROPS: FixedNavProps = {
+  authorName: "聂灵晞",
+  authorNameEn: "Nie Lingxi",
+  sections: FALLBACK_SECTIONS.map((s) => ({
+    id: s.id,
+    label: s.label,
+    href: `/#${s.id}`,
+  })),
+};
+
+type SectionId = (typeof FALLBACK_SECTIONS)[number]["id"];
 
 export function FixedNav({
   activeTab,
   onTabChange,
+  data,
 }: {
   activeTab?: SectionId;
   onTabChange?: (id: SectionId) => void;
+  data?: FixedNavProps;
 }) {
+  const d = data ?? FALLBACK_PROPS;
   const location = useLocation();
   const onHome = location.pathname === "/";
 
@@ -25,14 +39,14 @@ export function FixedNav({
           to="/"
           className="flex items-baseline gap-3 font-serif text-[15px] tracking-[0.05em] text-foreground"
         >
-          <span>聂灵晞</span>
+          <span>{d.authorName}</span>
           <span className="hidden sm:inline text-[11px] font-sans tracking-[0.2em] text-muted-foreground uppercase">
-            Nie Lingxi
+            {d.authorNameEn}
           </span>
         </Link>
         <ul className="flex items-center gap-6 sm:gap-9 text-[13px]">
-          {sections.map((s) => {
-            const isActive = onHome && activeTab === s.id;
+          {d.sections.map((s) => {
+            const isActive = onHome && activeTab === (s.id as SectionId);
             const className =
               "transition-colors tracking-[0.15em] " +
               (isActive
@@ -44,7 +58,7 @@ export function FixedNav({
                   <button
                     type="button"
                     className={className}
-                    onClick={() => onTabChange(s.id)}
+                    onClick={() => onTabChange(s.id as SectionId)}
                   >
                     {s.label}
                   </button>

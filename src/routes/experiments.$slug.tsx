@@ -51,42 +51,11 @@ export const Route = createFileRoute("/experiments/$slug")({
 });
 
 function ExperimentDetail() {
-  const rootCtx = Route.useRouteContext() as { footerProps?: FooterProps | null; fixedNavProps?: FixedNavProps | null };
+  const rootCtx = Route.useRouteContext() as any;
   const { slug } = Route.useParams();
-  const data = experiments.find((e) => e.slug === (slug as ExperimentSlug))!;
-  const [images, setImages] = useState<string[]>([]);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const storageKey = `experiment.images.${slug}`;
+  const expDetail: ExperimentDetailProps | null = rootCtx.expDetail ?? null;
   const safe = expDetail ?? { num: "", date: "", category: "", title: "", hypothesis: "", optimization: [], selfTraining: [], screenshotUrls: [] };
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) setImages(JSON.parse(raw));
-    } catch {}
-  }, [storageKey]);
-
-  const persist = (next: string[]) => {
-    setImages(next);
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch {}
-  };
-
-  const onAdd = (files: FileList | null) => {
-    if (!files) return;
-    const readers = Array.from(files).map(
-      (f) =>
-        new Promise<string>((resolve) => {
-          const r = new FileReader();
-          r.onload = () => resolve(String(r.result || ""));
-          r.readAsDataURL(f);
-        }),
-    );
-    Promise.all(readers).then((datas) => persist([...images, ...datas]));
-  };
-
-  const remove = (i: number) => persist(images.filter((_, idx) => idx !== i));
+  const images: string[] = safe.screenshotUrls;
 
   return (
     <div className="min-h-screen bg-background text-foreground">

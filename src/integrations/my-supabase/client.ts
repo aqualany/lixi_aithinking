@@ -1,19 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
-
-// External Supabase project (not Lovable Cloud).
-// URL and publishable key are safe to expose to the browser.
-export const MY_SUPABASE_URL = "https://eoiltvhuypeeqcgwwnbj.supabase.co";
-export const MY_SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_9g6RXTBBlKXBEGfMNmIGCg_dJ63zfy5";
-
-export const mySupabase = createClient(
-  MY_SUPABASE_URL,
-  MY_SUPABASE_PUBLISHABLE_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      storageKey: "my-supabase-auth",
-    },
-  },
-);
+// 已废弃 — 外部 Supabase 实例统一通过 src/integrations/supabase/client.ts 连接。
+// 如需在旧代码中使用 mySupabase，改为：
+//   import { supabase as mySupabase } from '@/integrations/supabase/client'
+// 本文件将在 Phase 4 前台迁移完成后彻底删除。
+export { supabase as mySupabase } from '@/integrations/supabase/client';

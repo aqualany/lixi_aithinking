@@ -1,6 +1,7 @@
--- 006: Seed data
+-- 006: Seed data (idempotent — safe to re-run)
 -- Phase 2 — Portfolio CMS Migration
 -- Uses fixed UUIDs for reproducibility. All content from hardcoded portfolio components.
+-- All INSERTs use ON CONFLICT DO UPDATE for idempotent re-runs.
 
 -- ===============================================================
 -- 1. content_types (3 rows)
@@ -8,7 +9,12 @@
 INSERT INTO public.content_types (id, slug, name, description, sort_order) VALUES
   ('a0000000-0000-0000-0000-000000000001', 'research',   '研究文章',  '研究长文',   1),
   ('a0000000-0000-0000-0000-000000000002', 'experiment', '实验笔记',  '提示词迭代实验', 2),
-  ('a0000000-0000-0000-0000-000000000003', 'resume',     '简历',      '个人简历',   3);
+  ('a0000000-0000-0000-0000-000000000003', 'resume',     '简历',      '个人简历',   3)
+ON CONFLICT (id) DO UPDATE SET
+  slug        = EXCLUDED.slug,
+  name        = EXCLUDED.name,
+  description = EXCLUDED.description,
+  sort_order  = EXCLUDED.sort_order;
 
 -- ===============================================================
 -- 2. pages (4 rows)
@@ -29,7 +35,12 @@ INSERT INTO public.pages (id, slug, title, description, sort_order) VALUES
   ('b0000000-0000-0000-0000-000000000004', 'resume',
     '聂灵晞 · 简历',
     '从 UI 设计与产品出身，逐步转入创作数据与人机协作写作方向。以下按"经历—教育—写作—技能"分列。',
-    4);
+    4)
+ON CONFLICT (id) DO UPDATE SET
+  slug        = EXCLUDED.slug,
+  title       = EXCLUDED.title,
+  description = EXCLUDED.description,
+  sort_order  = EXCLUDED.sort_order;
 
 -- ===============================================================
 -- 3. site_settings (1 row)
@@ -50,8 +61,22 @@ INSERT INTO public.site_settings (
   ARRAY['INFJ'],
   'https://github.com/',
   'nielanyu@example.com',
-  'cc934637-4e6d-49de-9ca7-5c0f62b9cf4b'  -- 管理员 UUID
-);
+  'cc934637-4e6d-49de-9ca7-5c0f62b9cf4b'
+)
+ON CONFLICT (id) DO UPDATE SET
+  site_title       = EXCLUDED.site_title,
+  site_description = EXCLUDED.site_description,
+  author_name      = EXCLUDED.author_name,
+  author_name_en   = EXCLUDED.author_name_en,
+  hero_eyebrow     = EXCLUDED.hero_eyebrow,
+  bio_lines        = EXCLUDED.bio_lines,
+  tags             = EXCLUDED.tags,
+  github_url       = EXCLUDED.github_url,
+  contact_email    = EXCLUDED.contact_email;
+
+-- Note: admin_user_id is NOT updated on re-run (protected by 004 trigger).
+-- The trigger allows NULL → uuid (first bind), but blocks uuid → different uuid.
+-- If you need to change it, disable the trigger first.
 
 -- ===============================================================
 -- 4. navigation (5 rows)
@@ -61,7 +86,13 @@ INSERT INTO public.navigation (id, location, label, href, is_external, sort_orde
   ('d0000000-0000-0000-0000-000000000002', 'header', '实验', '/#experiments', false, 2),
   ('d0000000-0000-0000-0000-000000000003', 'header', '简历', '/#resume', false, 3),
   ('d0000000-0000-0000-0000-000000000004', 'footer', 'nielanyu@example.com', 'mailto:nielanyu@example.com', true, 1),
-  ('d0000000-0000-0000-0000-000000000005', 'footer', 'GitHub', 'https://github.com/', true, 2);
+  ('d0000000-0000-0000-0000-000000000005', 'footer', 'GitHub', 'https://github.com/', true, 2)
+ON CONFLICT (id) DO UPDATE SET
+  location    = EXCLUDED.location,
+  label       = EXCLUDED.label,
+  href        = EXCLUDED.href,
+  is_external = EXCLUDED.is_external,
+  sort_order  = EXCLUDED.sort_order;
 
 -- ===============================================================
 -- 5. posts — Research article
@@ -79,7 +110,17 @@ INSERT INTO public.posts (
   '2026-11-01',
   1,
   '{"word_count": 4800}'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+  content_type_id = EXCLUDED.content_type_id,
+  slug            = EXCLUDED.slug,
+  title           = EXCLUDED.title,
+  summary         = EXCLUDED.summary,
+  body_md         = EXCLUDED.body_md,
+  status          = EXCLUDED.status,
+  published_at    = EXCLUDED.published_at,
+  sort_order      = EXCLUDED.sort_order,
+  extra           = EXCLUDED.extra;
 
 -- ===============================================================
 -- 6. post_sections — Research article (5 rows)
@@ -89,7 +130,12 @@ INSERT INTO public.post_sections (id, post_id, anchor, title, sort_order) VALUES
   ('f0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000001', 'sec-2', '二、语言理解真正要求什么', 2),
   ('f0000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000001', 'sec-3', '三、创意数据作为一个产品问题', 3),
   ('f0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000001', 'sec-4', '四、三条我反复回到的原则', 4),
-  ('f0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000001', 'sec-5', '五、这份主页想论证什么', 5);
+  ('f0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000001', 'sec-5', '五、这份主页想论证什么', 5)
+ON CONFLICT (id) DO UPDATE SET
+  post_id   = EXCLUDED.post_id,
+  anchor    = EXCLUDED.anchor,
+  title     = EXCLUDED.title,
+  sort_order = EXCLUDED.sort_order;
 
 -- ===============================================================
 -- 7. posts — Experiment: wuxia
@@ -108,7 +154,18 @@ INSERT INTO public.posts (
   '2026-08-01',
   1,
   '{"num": "笔记 01", "hypothesis": "武侠段落的"力气"来自动词与关节位置，而非形容词。禁用副词是最小干预。", "optimization": ["v1：让模型直接"写一段武打"，产出的是电视剧解说词。", "v2：加入约束"不许使用形容词与副词"，模型开始写身体。", "v3：加入"镜头只跟随一件器物"，画面自动获得节奏与视点。"], "self_training": ["把武侠语料按"动作/心理/景物"三层拆开，训练模型学习"留白比例"。", "将修订前后的删除线作为对比样本，教会模型识别"过度描写"。"], "screenshot_media_ids": []}'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+  content_type_id = EXCLUDED.content_type_id,
+  slug            = EXCLUDED.slug,
+  title           = EXCLUDED.title,
+  subtitle        = EXCLUDED.subtitle,
+  summary         = EXCLUDED.summary,
+  body_md         = EXCLUDED.body_md,
+  status          = EXCLUDED.status,
+  published_at    = EXCLUDED.published_at,
+  sort_order      = EXCLUDED.sort_order,
+  extra           = EXCLUDED.extra;
 
 -- ===============================================================
 -- 8. posts — Experiment: song-ci
@@ -127,7 +184,18 @@ INSERT INTO public.posts (
   '2026-09-01',
   2,
   '{"num": "笔记 02", "hypothesis": "词牌的"味"不在字面，而在"为什么这个字而不是那个字"的选择过程。", "optimization": ["v1：仿辛弃疾风格作《青玉案》——格律对，用词漂亮而空。", "v2：要求模型给三份候选并说明会划掉哪一份，出现"编辑视角"。", "v3：把定稿当第一稿交给三十年后的自己修订，产出带修订小注的双层文本。"], "self_training": ["构造 (草稿, 修订理由, 定稿) 的三元组作为微调样本。", "以"字级别删除线"作为损失函数的注意力权重，让模型学习"克制"。"], "screenshot_media_ids": []}'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+  content_type_id = EXCLUDED.content_type_id,
+  slug            = EXCLUDED.slug,
+  title           = EXCLUDED.title,
+  subtitle        = EXCLUDED.subtitle,
+  summary         = EXCLUDED.summary,
+  body_md         = EXCLUDED.body_md,
+  status          = EXCLUDED.status,
+  published_at    = EXCLUDED.published_at,
+  sort_order      = EXCLUDED.sort_order,
+  extra           = EXCLUDED.extra;
 
 -- ===============================================================
 -- 9. posts — Experiment: modern-poetry
@@ -146,7 +214,18 @@ INSERT INTO public.posts (
   '2026-10-01',
   3,
   '{"num": "笔记 03", "hypothesis": "负约束（不许写什么）比正约束（要写什么）更快把诗从摘要逼进意象。", "optimization": ["v1："写一首关于孤独的现代诗"——抽象、感伤，无落脚点。", "v2：限定"只能用具体物：椅子、雨、灯、杯"，物件到场，句法仍在解释。", "v3：四行，禁一切情绪形容词，只写物——情绪从排布里长出来。"], "self_training": ["在语料中给句子标注 show/tell 二值标签，作为可训练的"质地"信号。", "构造"禁用词-输出"成对样本，教会模型在缺失常用词时寻找替代表达。"], "screenshot_media_ids": []}'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+  content_type_id = EXCLUDED.content_type_id,
+  slug            = EXCLUDED.slug,
+  title           = EXCLUDED.title,
+  subtitle        = EXCLUDED.subtitle,
+  summary         = EXCLUDED.summary,
+  body_md         = EXCLUDED.body_md,
+  status          = EXCLUDED.status,
+  published_at    = EXCLUDED.published_at,
+  sort_order      = EXCLUDED.sort_order,
+  extra           = EXCLUDED.extra;
 
 -- ===============================================================
 -- 10. posts — Resume
@@ -181,4 +260,14 @@ INSERT INTO public.posts (
     ],
     "skills": ["创意数据流水线设计", "人类标注计划管理", "提示词与评测框架", "与模型团队协作微调", "编辑判断与文学阅读", "中 / 英双语写作", "Python · SQL", "读者小组研究"]
   }'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+  content_type_id = EXCLUDED.content_type_id,
+  slug            = EXCLUDED.slug,
+  title           = EXCLUDED.title,
+  summary         = EXCLUDED.summary,
+  body_md         = EXCLUDED.body_md,
+  status          = EXCLUDED.status,
+  published_at    = EXCLUDED.published_at,
+  sort_order      = EXCLUDED.sort_order,
+  extra           = EXCLUDED.extra;

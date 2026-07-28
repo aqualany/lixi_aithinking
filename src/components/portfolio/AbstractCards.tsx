@@ -1,18 +1,24 @@
-export type TabId = "research" | "experiments" | "resume";
+import type { SectionTabsProps } from "@/lib/cms/types";
 
-const tabs: { id: TabId; label: string; hint: string }[] = [
+const FALLBACK_TABS: SectionTabsProps["tabs"] = [
   { id: "research", label: "研究", hint: "01" },
   { id: "experiments", label: "实验笔记", hint: "02" },
   { id: "resume", label: "简历", hint: "03" },
 ];
 
+export type TabId = "research" | "experiments" | "resume";
+
 export function SectionTabs({
   active,
   onChange,
+  data,
 }: {
   active: TabId;
   onChange: (id: TabId) => void;
+  data?: SectionTabsProps;
 }) {
+  const tabs = data?.tabs ?? FALLBACK_TABS;
+
   return (
     <section className="mx-auto max-w-3xl px-6">
       <div className="border-y border-border">
@@ -23,7 +29,7 @@ export function SectionTabs({
               <li key={t.id} className="flex-1">
                 <button
                   type="button"
-                  onClick={() => onChange(t.id)}
+                  onClick={() => onChange(t.id as TabId)}
                   className={
                     "group flex w-full items-baseline justify-center gap-3 py-4 transition-colors " +
                     (isActive

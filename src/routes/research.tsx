@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { ResearchFull } from "@/components/portfolio/ResearchArticle";
 import { Footer } from "@/components/portfolio/Footer";
+import type { FooterProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/research")({
   head: () => ({
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/research")({
 });
 
 function ResearchPage() {
+  const rootCtx = Route.useRouteContext() as { footerProps?: FooterProps | null };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <FixedNav />
@@ -38,7 +40,7 @@ function ResearchPage() {
         </div>
         <ResearchFull />
       </main>
-      <Footer />
+      <Footer data={rootCtx.footerProps ?? undefined} />
     </div>
   );
 }

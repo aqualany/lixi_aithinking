@@ -2,6 +2,8 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Footer } from "@/components/portfolio/Footer";
+import type { FooterProps } from "@/lib/cms/types";
+
 import { experiments, type ExperimentSlug } from "@/components/portfolio/Experiments";
 
 export const Route = createFileRoute("/experiments/$slug")({
@@ -38,6 +40,7 @@ export const Route = createFileRoute("/experiments/$slug")({
 });
 
 function ExperimentDetail() {
+  const rootCtx = Route.useRouteContext() as { footerProps?: FooterProps | null };
   const { slug } = Route.useParams();
   const data = experiments.find((e) => e.slug === (slug as ExperimentSlug))!;
   const [images, setImages] = useState<string[]>([]);
@@ -206,7 +209,7 @@ function ExperimentDetail() {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer data={rootCtx.footerProps ?? undefined} />
     </div>
   );
 }

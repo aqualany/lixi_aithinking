@@ -13,7 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { createSsrClient } from "@/lib/cms/supabase.server";
 import { getSiteSettings } from "@/lib/cms/queries/site";
-import type { SiteSettingsRow } from "@/lib/cms/types";
+import { getNavigation } from "@/lib/cms/queries/navigation";
+import { toFooterProps } from "@/lib/cms/mappers";
+import type { SiteSettingsRow, FooterProps } from "@/lib/cms/types";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -86,18 +88,28 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<RootRouteContext>()({
   // SSR loader: fetch site_settings before any page renders
-  beforeLoad: async (): Promise<{ siteSettings: SiteSettingsRow | null }> => {
+  beforeLoad: async (): Promise<{
+    siteSettings: SiteSettingsRow | null;
+    footerProps: FooterProps | null;
+  }> => {
     try {
       const supabase = createSsrClient();
-      const settings = await getSiteSettings(supabase);
-      return { siteSettings: settings };
+      const [settings, footerNav] = await Promise.all([
+        getSiteSettings(supabase),
+        getNavigation(supabase, 'footer'),
+      ]);
+      return {
+        siteSettings: settings,
+        footerProps: settings ? toFooterProps(settings, footerNav) : null,
+      };
     } catch (e) {
       console.error("[__root] beforeLoad failed:", e);
-      return { siteSettings: null };
+      return { siteSettings: null, footerProps: null };
     }
   },
-  head: ({ context }: { context: RootRouteContext & { siteSettings: SiteSettingsRow | null } }) => {
-    const s = context.siteSettings;
+  head: (headContext) => {
+    // TanStack Router head may receive RouteMatch or be called without args in SSR
+    const s = (headContext as any)?.context?.siteSettings ?? null;
     const title = s?.site_title ?? "聂灵晞 · AI 创作数据研究者 个人主页";
     const description = s?.site_description ?? "";
     const author = s?.author_name ?? "聂灵晞";

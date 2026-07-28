@@ -7,6 +7,7 @@ import { ResearchPreview } from "@/components/portfolio/ResearchArticle";
 import { Experiments } from "@/components/portfolio/Experiments";
 import { Resume } from "@/components/portfolio/Resume";
 import { Footer } from "@/components/portfolio/Footer";
+import type { FooterProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  // Read root route context (from __root.tsx beforeLoad)
+  const rootCtx = Route.useRouteContext() as { footerProps?: FooterProps | null };
   const [tab, setTab] = useState<TabId>("research");
 
   useEffect(() => {
@@ -60,7 +63,7 @@ function Index() {
         {tab === "experiments" && <Experiments />}
         {tab === "resume" && <Resume />}
       </main>
-      <Footer />
+      <Footer data={rootCtx.footerProps ?? undefined} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
@@ -12,11 +12,11 @@ function AdminDashboard() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from('posts').select('id', { count: 'exact', head: true }),
-      supabase.from('pages').select('id', { count: 'exact', head: true }),
-      supabase.from('navigation').select('id', { count: 'exact', head: true }),
-      supabase.from('media').select('id', { count: 'exact', head: true }),
-    ]).then(([posts, pages, nav, media]) => {
+      (supabase.from('posts') as any).select('*', { count: 'exact', head: true }),
+      (supabase.from('pages') as any).select('id', { count: 'exact', head: true }),
+      (supabase.from('navigation') as any).select('id', { count: 'exact', head: true }),
+      (supabase.from('media') as any).select('id', { count: 'exact', head: true }),
+    ]).then(([posts, pages, nav, media]: any) => {
       setStats({
         posts: posts.count ?? 0,
         pages: pages.count ?? 0,
@@ -27,25 +27,42 @@ function AdminDashboard() {
     });
   }, []);
 
-  if (loading) return <div className="text-sm text-neutral-500">加载中...</div>;
+  const cards = [
+    { label: "文章", value: stats.posts, icon: "◇", color: "text-stone-700", to: "/admin/posts" },
+    { label: "页面", value: stats.pages, icon: "◈", color: "text-stone-500", to: "/admin/settings" },
+    { label: "导航项", value: stats.navigation, icon: "☰", color: "text-stone-500", to: "/admin/navigation" },
+    { label: "媒体文件", value: stats.media, icon: "◫", color: "text-stone-500", to: "/admin/media" },
+  ];
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold text-neutral-800">仪表盘</h1>
+      <h1 className="text-xl font-medium text-stone-800 mb-1">仪表盘</h1>
+      <p className="text-sm text-stone-400 mb-8">站点内容概览</p>
+
       <div className="grid grid-cols-4 gap-4">
-        {Object.entries(stats).map(([key, val]) => (
-          <div key={key} className="rounded-lg border bg-white p-4 shadow-sm">
-            <p className="text-sm text-neutral-500">{key}</p>
-            <p className="mt-1 text-2xl font-bold text-neutral-800">{val as number}</p>
-          </div>
+        {cards.map((c) => (
+          <Link key={c.label} to={c.to as any}
+            className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p className="text-2xl font-light text-stone-700">{c.value}</p>
+            <p className="mt-1 text-xs text-stone-400">{c.label}</p>
+          </Link>
         ))}
       </div>
-      <h2 className="mt-10 mb-3 text-lg font-semibold text-neutral-800">快速操作</h2>
+
+      <h2 className="text-sm font-medium text-stone-600 mt-10 mb-4">快捷操作</h2>
       <div className="grid grid-cols-2 gap-3">
-        <a href="/admin/posts" className="rounded border bg-white p-4 text-sm text-neutral-700 hover:bg-neutral-50 shadow-sm">编辑文章</a>
-        <a href="/admin/navigation" className="rounded border bg-white p-4 text-sm text-neutral-700 hover:bg-neutral-50 shadow-sm">管理导航</a>
-        <a href="/admin/settings" className="rounded border bg-white p-4 text-sm text-neutral-700 hover:bg-neutral-50 shadow-sm">站点配置</a>
-        <a href="/admin/media" className="rounded border bg-white p-4 text-sm text-neutral-700 hover:bg-neutral-50 shadow-sm">媒体库</a>
+        {[
+          { label: "写新文章", to: "/admin/posts/new", sub: "Markdown 编辑器" },
+          { label: "管理导航", to: "/admin/navigation", sub: "Header / Footer" },
+          { label: "站点配置", to: "/admin/settings", sub: "名称 / 简介" },
+          { label: "上传媒体", to: "/admin/media", sub: "图片管理" },
+        ].map((item) => (
+          <Link key={item.label} to={item.to as any}
+            className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p className="text-sm font-medium text-stone-700">{item.label}</p>
+            <p className="mt-0.5 text-xs text-stone-400">{item.sub}</p>
+          </Link>
+        ))}
       </div>
     </div>
   );

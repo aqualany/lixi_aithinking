@@ -12,15 +12,14 @@ function SettingsPage() {
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    (supabase as any).from('site_settings').select('*').limit(1).single().then(({ data }: any) => {
+    (supabase.from('site_settings') as any).select('*').limit(1).single().then(({ data }: any) => {
       if (data) setForm(data);
     });
   }, []);
 
   const save = async () => {
     setSaving(true); setMsg("");
-    const session = await supabase.auth.getSession();
-    const { error } = await (supabase as any).from("site_settings" as any).update({
+    const { error } = await (supabase.from('site_settings') as any).update({
       site_title: form.site_title, site_description: form.site_description,
       author_name: form.author_name, author_name_en: form.author_name_en,
       hero_eyebrow: form.hero_eyebrow, github_url: form.github_url,
@@ -31,27 +30,65 @@ function SettingsPage() {
     setSaving(false);
   };
 
+  const Field = ({ label, field, type = "text", desc = "" }: any) => (
+    <div>
+      <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">{label}</label>
+      {type === "textarea" ? (
+        <textarea value={form[field] ?? ""} onChange={e => setForm({...form, [field]: e.target.value})}
+          rows={4} className="w-full rounded-lg border border-stone-200 px-4 py-2.5 text-sm text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200 transition-colors" />
+      ) : (
+        <input type={type} value={form[field] ?? ""} onChange={e => setForm({...form, [field]: e.target.value})}
+          className="w-full rounded-lg border border-stone-200 px-4 py-2.5 text-sm text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200 transition-colors" />
+      )}
+      {desc && <p className="mt-1 text-xs text-stone-400">{desc}</p>}
+    </div>
+  );
+
   return (
-    <div className="max-w-2xl">
-      <h1 className="mb-6 text-xl font-semibold text-neutral-800">站点配置</h1>
-      <div className="space-y-4">
-        {["site_title","site_description","author_name","author_name_en","hero_eyebrow","github_url","contact_email"].map(field => (
-          <div key={field}>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">{field}</label>
-            <input value={form[field] ?? ""} onChange={e => setForm({...form, [field]: e.target.value})}
-              className="w-full rounded border border-neutral-300 px-3 py-2 text-sm" />
+    <div>
+      <h1 className="text-xl font-medium text-stone-800 mb-1">站点配置</h1>
+      <p className="text-sm text-stone-400 mb-8">管理站点的基本信息和展示内容</p>
+
+      <div className="space-y-6">
+        <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+          <h2 className="text-sm font-medium text-stone-700 mb-4">基本信息</h2>
+          <div className="grid grid-cols-2 gap-5">
+            <Field label="站点标题" field="site_title" desc="浏览器标签页标题" />
+            <Field label="站点描述" field="site_description" desc="SEO meta description" />
+            <Field label="作者中文名" field="author_name" />
+            <Field label="作者英文名" field="author_name_en" />
+            <div className="col-span-2">
+              <Field label="站点描述（长）" field="site_description" type="textarea" desc="用于 SEO 的完整描述" />
+            </div>
           </div>
-        ))}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-neutral-700">简介（每行一句）</label>
-          <textarea value={(form.bio_lines ?? []).join('\n')} onChange={e => setForm({...form, bio_lines: e.target.value.split('\n')})}
-            rows={4} className="w-full rounded border border-neutral-300 px-3 py-2 text-sm" />
-        </div>
+        </section>
+
+        <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+          <h2 className="text-sm font-medium text-stone-700 mb-4">个人简介</h2>
+          <div className="space-y-4">
+            <Field label="眉标文案" field="hero_eyebrow" desc="Hero 区域顶部小字（当前已隐藏）" />
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+          <h2 className="text-sm font-medium text-stone-700 mb-4">联系方式</h2>
+          <div className="grid grid-cols-2 gap-5">
+            <Field label="邮箱" field="contact_email" type="email" desc="当前前台已隐藏" />
+            <Field label="GitHub URL" field="github_url" desc="当前前台已隐藏" />
+          </div>
+        </section>
+      </div>
+
+      <div className="mt-6 flex items-center gap-4">
         <button onClick={save} disabled={saving}
-          className="rounded bg-neutral-900 px-6 py-2 text-sm text-white hover:bg-neutral-700 disabled:opacity-50">
-          {saving ? "保存中..." : "保存"}
+          className="rounded-lg bg-stone-900 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-stone-800 disabled:opacity-50">
+          {saving ? "保存中…" : "保存配置"}
         </button>
-        {msg && <p className="text-sm" style={{color: msg.includes('失败') ? 'red' : 'green'}}>{msg}</p>}
+        {msg && (
+          <span className={`text-sm ${msg.includes('失败') ? 'text-red-500' : 'text-green-600'}`}>
+            {msg}
+          </span>
+        )}
       </div>
     </div>
   );

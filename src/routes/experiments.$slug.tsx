@@ -4,9 +4,23 @@ import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Footer } from "@/components/portfolio/Footer";
 import type { FooterProps, FixedNavProps } from "@/lib/cms/types";
 
-import { experiments, type ExperimentSlug } from "@/components/portfolio/Experiments";
+
+
 
 export const Route = createFileRoute("/experiments/$slug")({
+  beforeLoad: async ({ params }): Promise<{ expDetail: ExperimentDetailProps | null }> => {
+    try {
+      const supabase = createSsrClient();
+      const post = await getPostBySlug(supabase, params.slug);
+      if (!post) return { expDetail: null };
+      const extra = (post.extra ?? {}) as any;
+      const mediaIds: string[] = extra.screenshot_media_ids ?? [];
+      const mediaRows = mediaIds.length > 0 ? await getMediaByIds(supabase, mediaIds) : [];
+      return { expDetail: toExperimentDetailProps(post, mediaRows) };
+    } catch {
+      return { expDetail: null };
+    }
+  },
   head: (ctx) => {
     const seo = (ctx as any)?.context?.pageSeoMap?.["experiments"] ?? null;
     return {
@@ -19,9 +33,7 @@ export const Route = createFileRoute("/experiments/$slug")({
     };
   },
   loader: ({ params }) => {
-    const found = experiments.find((e) => e.slug === params.slug);
-    if (!found) throw notFound();
-    return { slug: found.slug };
+    return { slug: params.slug };
   },
   notFoundComponent: () => (
     <div className="flex min-h-screen items-center justify-center px-6">
@@ -43,6 +55,7 @@ function ExperimentDetail() {
   const [images, setImages] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const storageKey = `experiment.images.${slug}`;
+  const safe = expDetail ?? { num: "", date: "", category: "", title: "", hypothesis: "", optimization: [], selfTraining: [], screenshotUrls: [] };
 
   useEffect(() => {
     try {

@@ -16,8 +16,8 @@ import { getSiteSettings } from "@/lib/cms/queries/site";
 import { getNavigation } from "@/lib/cms/queries/navigation";
 import { getAllPages } from "@/lib/cms/queries/pages";
 import { getPostBySlug, getPostSections, getPostsByContentType } from "@/lib/cms/queries/posts";import { toPageSeoProps } from "@/lib/cms/mappers";
-import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps, toResearchFullProps, toExperimentCardData } from "@/lib/cms/mappers";
-import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps, ExperimentsListProps, PageSeoProps } from "@/lib/cms/types";
+import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps, toResearchFullProps, toExperimentCardData, toResumeProps } from "@/lib/cms/mappers";
+import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps, ExperimentsListProps, ResumeProps, PageSeoProps } from "@/lib/cms/types";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -97,21 +97,23 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     fixedNavProps: FixedNavProps | null;
     researchProps: ResearchFullProps | null;
     experimentsListProps: ExperimentsListProps | null;
+    resumeProps: ResumeProps | null;
     sectionTabsProps: SectionTabsProps | null;
     pageSeoMap: Record<string, PageSeoProps>;
   }> => {
     try {
       const supabase = createSsrClient();
-      const [settings, headerNav, footerNav, allPages, researchPost, expPosts] = await Promise.all([
+      const [settings, headerNav, footerNav, allPages, researchPost, expPosts, resumePost] = await Promise.all([
         getSiteSettings(supabase),
         getNavigation(supabase, 'header'),
         getNavigation(supabase, 'footer'),
         getAllPages(supabase),
         getPostBySlug(supabase, 'fluent-after'),
         getPostsByContentType(supabase, 'experiment'),
+        getPostBySlug(supabase, 'main'),
       ]);
       const researchSections = researchPost ? await getPostSections(supabase, researchPost.id) : [];
-      const experimentsListProps: ExperimentsListProps | null = expPosts ? { experiments: toExperimentCardData(expPosts) } : null;
+      const experimentsListProps: ExperimentsListProps | null = expPosts ? { experiments: toExperimentCardData, toResumeProps(expPosts) } : null;
       const pageSeoMap: Record<string, PageSeoProps> = {};
       for (const page of allPages) {
         pageSeoMap[page.slug] = toPageSeoProps(page);
@@ -131,10 +133,11 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         pageSeoMap,
         researchProps,
         experimentsListProps,
+        resumeProps,
       };
     } catch (e) {
       console.error("[__root] beforeLoad failed:", e);
-      return { siteSettings: null, heroProps: null, footerProps: null, fixedNavProps: null, sectionTabsProps: null, researchProps: null, experimentsListProps: null, pageSeoMap: {} };
+      return { siteSettings: null, heroProps: null, footerProps: null, fixedNavProps: null, sectionTabsProps: null, researchProps: null, experimentsListProps: null, resumeProps: null, pageSeoMap: {} };
     }
   },
   head: (headContext) => {

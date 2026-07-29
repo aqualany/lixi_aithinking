@@ -116,6 +116,23 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         supabase.from('content_types').select('*').order('sort_order').then(({ data }: any) => data ?? []),
       ]);
       const researchSections = researchPost ? await getPostSections(supabase, researchPost.id) : [];
+      // Resolve avatar and favicon URLs from media table
+      let avatarUrl: string | null = null;
+      let faviconUrl: string | null = null;
+      if (settings) {
+        if (settings.avatar_media_id) {
+          try {
+            const { data: avatarMedia } = await supabase.from('media').select('public_url').eq('id', settings.avatar_media_id).limit(1).single();
+            avatarUrl = (avatarMedia as any)?.public_url || null;
+          } catch {}
+        }
+        if ((settings as any).favicon_media_id) {
+          try {
+            const { data: favMedia } = await supabase.from('media').select('public_url').eq('id', (settings as any).favicon_media_id).limit(1).single();
+            faviconUrl = (favMedia as any)?.public_url || null;
+          } catch {}
+        }
+      }
       const experimentsListProps: ExperimentsListProps | null = expPosts ? {
         experiments: toExperimentCardData(expPosts, contentTypes as any[] || undefined),
         pageDescription: allPages.find(p => p.slug === 'experiments')?.description || '',
@@ -134,8 +151,8 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
           : null;
 
       return {
-        siteSettings: settings,
-        heroProps: settings ? toHeroProps(settings, null) : null,
+        siteSettings: settings ? ({ ...settings, _faviconUrl: faviconUrl } as any) : null,
+        heroProps: settings ? toHeroProps(settings, avatarUrl) : null,
         footerProps: settings ? toFooterProps(settings, footerNav) : null,
         fixedNavProps: settings && headerNav ? toFixedNavProps(settings, headerNav) : null,
         sectionTabsProps: sectionTabs,

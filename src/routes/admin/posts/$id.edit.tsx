@@ -87,6 +87,7 @@ function PostEditPage() {
     const payload: any = {
       title: form.title,
       slug: form.slug || generateSlug(form.title),
+      subtitle: form.subtitle || '',
       summary: form.summary,
       body_md: form.body_md,
       published_at: form.published_at || null,

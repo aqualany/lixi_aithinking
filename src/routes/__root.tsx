@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -210,32 +210,42 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   
-  // Build CMS data — useMatches() is reliable on all navigations
-  const matches = useMatches();
-  const rootMatch = matches.find(m => m.routeId === '__root__');
-  const rootCtx = (rootMatch as any)?.context ?? {};
-  const cmsData: CmsRootData = {
-    siteSettings: rootCtx.siteSettings ?? null,
-    heroProps: rootCtx.heroProps ?? null,
-    footerProps: rootCtx.footerProps ?? null,
-    fixedNavProps: rootCtx.fixedNavProps ?? null,
-    researchProps: rootCtx.researchProps ?? null,
-    experimentsListProps: rootCtx.experimentsListProps ?? null,
-    resumeProps: rootCtx.resumeProps ?? null,
-    sectionTabsProps: rootCtx.sectionTabsProps ?? null,
-    pageSeoMap: rootCtx.pageSeoMap ?? {},
-  };
-  // Sync to global store for reliable access on CSR
-  if (cmsData.siteSettings) {
-    setCmsData(cmsData);
-  }
-
-  // Sync document title from CMS data (bypass head() limitation)
+  // ONCE: store CMS data when first available (SSR or first CSR render)
+  // NEVER recalculate, to avoid blanking out on hash-change re-renders
+  const [cmsData, setCmsDataState] = useState<CmsRootData | null>(null);
+  const initialized = useRef(false);
+  
+  // Initialize from root match context
   useEffect(() => {
-    if (cmsData.siteSettings?.site_title) {
+    if (initialized.current) return;
+    initialized.current = true;
+    
+    const matches = useMatches();
+    const rootMatch = matches.find(m => m.routeId === '__root__');
+    const rootCtx = (rootMatch as any)?.context ?? {};
+    const data: CmsRootData = {
+      siteSettings: rootCtx.siteSettings ?? null,
+      heroProps: rootCtx.heroProps ?? null,
+      footerProps: rootCtx.footerProps ?? null,
+      fixedNavProps: rootCtx.fixedNavProps ?? null,
+      researchProps: rootCtx.researchProps ?? null,
+      experimentsListProps: rootCtx.experimentsListProps ?? null,
+      resumeProps: rootCtx.resumeProps ?? null,
+      sectionTabsProps: rootCtx.sectionTabsProps ?? null,
+      pageSeoMap: rootCtx.pageSeoMap ?? {},
+    };
+    if (data.siteSettings) {
+      setCmsDataState(data);
+      setCmsData(data); // sync to global store
+    }
+  }, []);
+
+  // Sync document title on data change
+  useEffect(() => {
+    if (cmsData?.siteSettings?.site_title) {
       document.title = cmsData.siteSettings.site_title;
     }
-  }, [cmsData.siteSettings?.site_title]);
+  }, [cmsData?.siteSettings?.site_title]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -11,7 +11,7 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
   return (
     <>
       <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-        {data.typeLabelMeta || '研究 · 论文'}
+        {data.typeLabelMeta ? data.typeLabelMeta : ""}
       </p>
       <div className="mt-6">
         {linkTitle ? (

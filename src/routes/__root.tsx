@@ -210,17 +210,19 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   
+  // useMatches() MUST be called at component top level (React Hooks rule)
+  const matches = useMatches();
+  
   // ONCE: store CMS data when first available (SSR or first CSR render)
   // NEVER recalculate, to avoid blanking out on hash-change re-renders
   const [cmsData, setCmsDataState] = useState<CmsRootData | null>(null);
   const initialized = useRef(false);
   
-  // Initialize from root match context
+  // Initialize CMS data from root match context
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
     
-    const matches = useMatches();
     const rootMatch = matches.find(m => m.routeId === '__root__');
     const rootCtx = (rootMatch as any)?.context ?? {};
     const data: CmsRootData = {
@@ -238,7 +240,7 @@ function RootComponent() {
       setCmsDataState(data);
       setCmsData(data); // sync to global store
     }
-  }, []);
+  }, [matches]);
 
   // Sync document title on data change
   useEffect(() => {

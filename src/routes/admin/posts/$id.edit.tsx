@@ -206,19 +206,15 @@ function PostEditPage() {
                 </p>
               </div>
               <div>
-                <label className="block text-xs text-stone-400 mb-1">内容类型</label>
-                <select
-                  value={form.content_type_id}
-                  onChange={e => setForm({ ...form, content_type_id: e.target.value })}
+                <label className="block text-xs text-stone-400 mb-1">
+                  文章标签
+                  <span className="ml-1 text-[10px] text-stone-300">显示在文章标题左上角</span>
+                </label>
+                <input
+                  value={form.subtitle || ''}
+                  onChange={e => { markDirty(); setForm({ ...form, subtitle: e.target.value }); }}
                   className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-                >
-                  <option value="">选择类型</option>
-                  {types.map((t: any) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({(t as any).type_label || ''})
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div>
                 <label className="block text-xs text-stone-400 mb-1">状态</label>

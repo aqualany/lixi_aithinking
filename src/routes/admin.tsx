@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: "/admin/settings", label: "站点配置", icon: "⚙" },
   { to: "/admin/posts", label: "文章管理", icon: "◇" },
   { to: "/admin/experiments", label: "实验笔记", icon: "△" },
+  { to: "/admin/pages", label: "页面管理", icon: "▤" },
   { to: "/admin/resume", label: "简历管理", icon: "○" },
   { to: "/admin/navigation", label: "导航管理", icon: "☰" },
   { to: "/admin/media", label: "媒体库", icon: "◫" },
@@ -23,8 +24,10 @@ function AdminLayout() {
   const [checking, setChecking] = useState(true);
 
   const currentPath = matches[matches.length - 1]?.routeId ?? "";
+  const isLoginPage = currentPath.endsWith('/login');
 
   useEffect(() => {
+    if (isLoginPage) { setChecking(false); return; }
     supabase.auth.getSession().then(({ data: { session } }: any) => {
       if (!session) { router.navigate({ to: '/admin/login' }); return; }
       (supabase.from('site_settings') as any).select('admin_user_id').limit(1).single().then(({ data }: any) => {
@@ -33,12 +36,23 @@ function AdminLayout() {
         setChecking(false);
       });
     });
-  }, []);
+  }, [isLoginPage]);
 
   const logout = async () => {
     await supabase.auth.signOut();
     router.navigate({ to: '/admin/login' });
   };
+
+  // Login page: full-screen without admin shell
+  if (isLoginPage) {
+    return <Outlet />;
+  }
+
+  // SSR / initial render: render layout skeleton, content via Outlet
+  // Don't block SSR rendering — auth check is client-side only
+  if (checking && typeof window === 'undefined') {
+    return <Outlet />;
+  }
 
   if (checking) return null;
   if (!user) return null;

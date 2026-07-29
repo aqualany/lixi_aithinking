@@ -1,11 +1,5 @@
 import type { SectionTabsProps } from "@/lib/cms/types";
 
-const FALLBACK_TABS: SectionTabsProps["tabs"] = [
-  { id: "research", label: "研究", hint: "01" },
-  { id: "experiments", label: "实验笔记", hint: "02" },
-  { id: "resume", label: "简历", hint: "03" },
-];
-
 export type TabId = "research" | "experiments" | "resume";
 
 export function SectionTabs({
@@ -17,13 +11,14 @@ export function SectionTabs({
   onChange: (id: string) => void;
   data?: SectionTabsProps;
 }) {
-  const tabs = data?.tabs ?? FALLBACK_TABS;
+  // Item 8: NO hardcoded fallback tabs — if no data, render nothing
+  if (!data || !data.tabs || data.tabs.length === 0) return null;
 
   return (
     <section className="mx-auto max-w-3xl px-6">
       <div className="border-y border-border">
         <ul className="flex items-stretch">
-          {tabs.map((t) => {
+          {data.tabs.map((t) => {
             const isActive = active === t.id;
             return (
               <li key={t.id} className="flex-1">

@@ -18,6 +18,7 @@ import { getAllPages } from "@/lib/cms/queries/pages";
 import { getPostBySlug, getPostSections, getPostsByContentType } from "@/lib/cms/queries/posts";import { toPageSeoProps } from "@/lib/cms/mappers";
 import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps, toResearchFullProps, toExperimentCardData, toResumeProps } from "@/lib/cms/mappers";
 import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps, ExperimentsListProps, ResumeProps, PageSeoProps } from "@/lib/cms/types";
+import { CmsProvider, type CmsRootData } from "@/lib/cms/context";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -103,7 +104,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   }> => {
     try {
       const supabase = createSsrClient();
-      const [settings, headerNav, footerNav, allPages, researchPost, expPosts, resumePost] = await Promise.all([
+      const [settings, headerNav, footerNav, allPages, researchPost, expPosts, resumePost, contentTypes] = await Promise.all([
         getSiteSettings(supabase),
         getNavigation(supabase, 'header'),
         getNavigation(supabase, 'footer'),
@@ -111,9 +112,15 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         getPostBySlug(supabase, 'fluent-after'),
         getPostsByContentType(supabase, 'experiment'),
         getPostBySlug(supabase, 'main'),
+        supabase.from('content_types').select('*').order('sort_order').then(({ data }: any) => data ?? []),
       ]);
       const researchSections = researchPost ? await getPostSections(supabase, researchPost.id) : [];
-      const experimentsListProps: ExperimentsListProps | null = expPosts ? { experiments: toExperimentCardData(expPosts) } : null;
+      const experimentsListProps: ExperimentsListProps | null = expPosts ? {
+        experiments: toExperimentCardData(expPosts, contentTypes as any[] || undefined),
+        pageDescription: allPages.find(p => p.slug === 'experiments')?.description || '',
+        categoryLabel: (contentTypes as any[])?.find((ct: any) => ct.slug === 'experiment')?.category_label || '',
+        typeLabel: (contentTypes as any[])?.find((ct: any) => ct.slug === 'experiment')?.type_label || '',
+      } : null;
       const resumeProps: ResumeProps | null = resumePost ? toResumeProps(resumePost) : null;
       const pageSeoMap: Record<string, PageSeoProps> = {};
       for (const page of allPages) {
@@ -122,7 +129,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       const sectionTabs = toSectionTabsProps(allPages, headerNav);
       const researchProps =
         settings && researchPost && researchSections
-          ? toResearchFullProps(researchPost, researchSections, settings.author_name)
+          ? toResearchFullProps(researchPost, researchSections, settings.author_name, (contentTypes as any[])?.find((ct: any) => ct.id === researchPost.content_type_id))
           : null;
 
       return {
@@ -142,9 +149,9 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     }
   },
   head: (headContext) => {
-    // TanStack Router head may receive RouteMatch or be called without args in SSR
     const s = (headContext as any)?.context?.siteSettings ?? null;
-    const title = s?.site_title ?? "聂灵晞 · AI 创作数据研究者 个人主页";
+    const faviconUrl = (s as any)?._faviconUrl || (s as any)?.faviconUrl || null;
+    const title = s?.site_title ?? "聂灵晞 · 个人主页";
     const description = s?.site_description ?? "";
     const author = s?.author_name ?? "聂灵晞";
 
@@ -159,14 +166,13 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:site", content: "@Lovable" },
       ],
       links: [
         {
           rel: "stylesheet",
           href: appCss,
         },
-        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+        { rel: "icon", href: faviconUrl || "/favicon.ico", type: "image/x-icon" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
         {
@@ -201,11 +207,37 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  // Read CMS data from route context EVERY render
+  // beforeLoad() runs on every SSR request and returns fresh Supabase data
+  // On CSR (SPA navigation), uses the SSR serialized data (last saved state)
+  const ctx = Route.useRouteContext() as any;
+  const { queryClient } = ctx;
+  
+  // Always build fresh from context — no module-level cache
+  const cmsData: CmsRootData = {
+    siteSettings: ctx.siteSettings ?? null,
+    heroProps: ctx.heroProps ?? null,
+    footerProps: ctx.footerProps ?? null,
+    fixedNavProps: ctx.fixedNavProps ?? null,
+    researchProps: ctx.researchProps ?? null,
+    experimentsListProps: ctx.experimentsListProps ?? null,
+    resumeProps: ctx.resumeProps ?? null,
+    sectionTabsProps: ctx.sectionTabsProps ?? null,
+    pageSeoMap: ctx.pageSeoMap ?? {},
+  };
+
+  // Sync document title from CMS data (bypass head() limitation)
+  useEffect(() => {
+    if (cmsData.siteSettings?.site_title) {
+      document.title = cmsData.siteSettings.site_title;
+    }
+  }, [cmsData.siteSettings?.site_title]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <CmsProvider data={cmsData}>
+        <Outlet />
+      </CmsProvider>
     </QueryClientProvider>
   );
 }

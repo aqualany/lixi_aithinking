@@ -2,22 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { ProseMarkdown } from "@/lib/cms/markdown";
 import type { ResearchFullProps } from "@/lib/cms/types";
 
-const FALLBACK_PROPS: ResearchFullProps = {
-  title: "流畅之后：论写作、语言理解与创意数据",
-  authorName: "聂灵晞",
-  date: "二〇二六年十一月",
-  wordCount: 4800,
-  summary: "大语言模型已经学会流畅地写作，但流畅并不等于意义...",
-  sections: [
-    { id: "sec-1", heading: "一、流畅的高原" },
-    { id: "sec-2", heading: "二、语言理解真正要求什么" },
-    { id: "sec-3", heading: "三、创意数据作为一个产品问题" },
-    { id: "sec-4", heading: "四、三条我反复回到的原则" },
-    { id: "sec-5", heading: "五、这份主页想论证什么" },
-  ],
-  bodyMd: "",
-};
-
 function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitle?: boolean }) {
   const Title = (
     <h2 className="zh-title font-serif text-[36px] leading-[1.35] tracking-[0.02em] text-foreground sm:text-[44px]">
@@ -27,7 +11,7 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
   return (
     <>
       <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-        研究 · 论文 01
+        {data.typeLabelMeta || '研究 · 论文'}
       </p>
       <div className="mt-6">
         {linkTitle ? (
@@ -81,28 +65,46 @@ function Sidebar({ data, activeOnly }: { data: ResearchFullProps; activeOnly?: b
 }
 
 export function ResearchPreview({ data }: { data?: ResearchFullProps }) {
-  const d = data ?? FALLBACK_PROPS;
+  if (!data) return null;
+  const previewBody = data.previewBodyMd || data.bodyMd;
   return (
     <section id="research"
       className="scroll-mt-24 border-t border-border bg-background">
       <div className="mx-auto max-w-3xl px-6 py-20">
-        <Header data={d} linkTitle />
+        <Header data={data} linkTitle />
         <div className="mt-14 md:grid md:grid-cols-[1fr_180px] md:gap-x-10">
           <div>
             <div className="relative">
               <article className="prose-article fade-mask-b">
-                <ProseMarkdown content={d.bodyMd} />
+                <ProseMarkdown content={previewBody} />
               </article>
             </div>
             <div className="mt-8 flex justify-center">
               <Link to="/research"
-                className="group inline-flex items-center gap-3 border border-foreground px-6 py-2.5 font-serif text-[15px] tracking-[0.15em] text-foreground transition-colors hover:bg-foreground hover:text-background">
+                className="group inline-flex items-center gap-3 border border-foreground px-6 py-2.5 font-serif text-[15px] tracking-[0.15em] text-foreground transition-colors hover:bg-foreground hover:text-background cursor-pointer">
                 阅读全文
                 <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
+
+            {/* Sections TOC below the button */}
+            {data.sections.length > 0 && (
+              <div className="mt-12 border-t border-border pt-8">
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">目录</p>
+                <ul className="mt-4 space-y-2">
+                  {data.sections.map((s) => (
+                    <li key={s.id}>
+                      <Link to="/research" hash={s.id}
+                        className="font-serif text-[14px] leading-[1.7] text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
+                        {s.heading}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          <Sidebar data={d} />
+          <Sidebar data={data} />
         </div>
       </div>
     </section>
@@ -110,17 +112,35 @@ export function ResearchPreview({ data }: { data?: ResearchFullProps }) {
 }
 
 export function ResearchFull({ data }: { data?: ResearchFullProps }) {
-  const d = data ?? FALLBACK_PROPS;
+  // Item 8: No hardcoded fallback — render nothing if no data
+  if (!data) return null;
   return (
     <section className="border-t border-border bg-background">
       <div className="mx-auto max-w-3xl px-6 py-20">
-        <Header data={d} />
+        <Header data={data} />
         <div className="mt-14 md:grid md:grid-cols-[1fr_180px] md:gap-x-10">
           <article className="prose-article">
-            <ProseMarkdown content={d.bodyMd} />
+            <ProseMarkdown content={data.bodyMd} />
           </article>
-          <Sidebar data={d} activeOnly />
+          <Sidebar data={data} activeOnly />
         </div>
+
+        {/* Bottom TOC */}
+        {data.sections.length > 0 && (
+          <div className="mt-20 border-t border-border pt-12">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">目录</p>
+            <ul className="mt-6 space-y-3">
+              {data.sections.map((s) => (
+                <li key={s.id}>
+                  <a href={`#${s.id}`}
+                    className="font-serif text-[16px] leading-[1.8] text-foreground transition-colors hover:text-muted-foreground">
+                    {s.heading}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </section>
   );

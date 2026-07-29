@@ -17,6 +17,7 @@ import { Route as AdminExperimentsRouteImport } from './routes/admin/experiments
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminNavigationRouteImport } from './routes/admin/navigation'
+import { Route as AdminPagesRouteImport } from './routes/admin/pages'
 import { Route as AdminResumeRouteImport } from './routes/admin/resume'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as ExperimentsSlugRouteImport } from './routes/experiments.$slug'
@@ -63,6 +64,11 @@ const AdminNavigationRoute = AdminNavigationRouteImport.update({
   path: '/navigation',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPagesRoute = AdminPagesRouteImport.update({
+  id: '/pages',
+  path: '/pages',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminResumeRoute = AdminResumeRouteImport.update({
   id: '/resume',
   path: '/resume',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/pages': typeof AdminPagesRoute
   '/admin/resume': typeof AdminResumeRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/pages': typeof AdminPagesRoute
   '/admin/resume': typeof AdminResumeRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/pages': typeof AdminPagesRoute
   '/admin/resume': typeof AdminResumeRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
+    | '/admin/pages'
     | '/admin/resume'
     | '/admin/settings'
     | '/experiments/$slug'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
+    | '/admin/pages'
     | '/admin/resume'
     | '/admin/settings'
     | '/experiments/$slug'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/media'
     | '/admin/navigation'
+    | '/admin/pages'
     | '/admin/resume'
     | '/admin/settings'
     | '/experiments/$slug'
@@ -246,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNavigationRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/pages': {
+      id: '/admin/pages'
+      path: '/pages'
+      fullPath: '/admin/pages'
+      preLoaderRoute: typeof AdminPagesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/resume': {
       id: '/admin/resume'
       path: '/resume'
@@ -289,6 +308,7 @@ interface AdminRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminNavigationRoute: typeof AdminNavigationRoute
+  AdminPagesRoute: typeof AdminPagesRoute
   AdminResumeRoute: typeof AdminResumeRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -301,6 +321,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminNavigationRoute: AdminNavigationRoute,
+  AdminPagesRoute: AdminPagesRoute,
   AdminResumeRoute: AdminResumeRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,

@@ -8,6 +8,7 @@ import type {
   PostSectionRow,
   PageRow,
   MediaRow,
+  ContentTypeRow,
   ExperimentExtra,
   ResumeExtra,
   ResearchExtra,
@@ -20,6 +21,8 @@ import type {
   ResumeProps,
   FooterProps,
   PageSeoProps,
+  PostDisplayProps,
+  ContactLink,
 } from './types';
 
 // ── Helpers ────────────────────────────────────────────────
@@ -86,10 +89,24 @@ export function toFooterProps(
     href: n.href,
     isExternal: n.is_external,
   }));
+  let contactLinks: ContactLink[] = [];
+  if (Array.isArray((settings as any).contact_links)) {
+    contactLinks = (settings as any).contact_links as ContactLink[];
+  } else if (settings.contact_email || settings.github_url) {
+    if (settings.contact_email) {
+      contactLinks.push({ label: settings.contact_email, value: settings.contact_email, href: `mailto:${settings.contact_email}` });
+    }
+    if (settings.github_url) {
+      contactLinks.push({ label: 'GitHub', value: settings.github_url, href: settings.github_url });
+    }
+  }
   return {
     authorName: settings.author_name,
     authorNameEn: settings.author_name_en,
     links,
+    contactLinks,
+    contactEmail: settings.contact_email || undefined,
+    githubUrl: settings.github_url || undefined,
   };
 }
 
@@ -130,7 +147,7 @@ export function toSectionTabsProps(
 
 export function toPageSeoProps(page: PageRow): PageSeoProps {
   return {
-    title: page.title,
+    title: (page as any).seo_title || page.title,
     description: page.description,
   };
 }
@@ -141,8 +158,23 @@ export function toResearchFullProps(
   post: PostRow,
   sections: PostSectionRow[],
   authorName: string,
+  contentType?: ContentTypeRow,
 ): ResearchFullProps {
   const extra = (post.extra ?? {}) as ResearchExtra;
+  const bodyMd = post.body_md;
+  // Compute ~50% truncated preview at nearest paragraph break
+  const halfLen = Math.floor(bodyMd.length / 4);
+  const previewBodyMd = bodyMd.length > 200
+    ? (() => {
+        // Find nearest paragraph break around 50%
+        const before = bodyMd.lastIndexOf('\n\n', halfLen);
+        const after = bodyMd.indexOf('\n\n', halfLen);
+        const cut = (before > halfLen - 200 && before > 0) ? before
+                  : (after > 0 && after < halfLen + 200) ? after
+                  : halfLen;
+        return bodyMd.slice(0, Math.max(cut, 1));
+      })()
+    : bodyMd;
   return {
     title: post.title,
     authorName,
@@ -152,22 +184,27 @@ export function toResearchFullProps(
     sections: [...sections]
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((s) => ({ id: s.anchor, heading: s.title })),
-    bodyMd: post.body_md,
+    bodyMd,
+    previewBodyMd,
+    typeLabelMeta: contentType ? `${contentType.category_label || ''} · ${contentType.type_label || ''}` : undefined,
+    categoryLabelMeta: contentType?.category_label || undefined,
   };
 }
 
 // ── Experiments list ──────────────────────────────────────
 
-export function toExperimentCardData(posts: PostRow[]): ExperimentCardData[] {
+export function toExperimentCardData(posts: PostRow[], contentTypes?: ContentTypeRow[]): ExperimentCardData[] {
+  const ctMap = new Map(contentTypes?.map(ct => [ct.id, ct]) ?? []);
   return [...posts]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((p) => {
       const extra = (p.extra ?? {}) as ExperimentExtra;
+      const ct = ctMap.get(p.content_type_id);
       return {
         slug: p.slug,
-        num: extra.num ?? '',
+        num: extra.num ?? (p as any).display_number ?? '',
         date: formatExperimentDate(p.published_at),
-        category: p.subtitle,
+        category: ct?.category_label || p.subtitle,
         title: p.title,
         keyInsight: p.summary,
       };
@@ -179,6 +216,7 @@ export function toExperimentCardData(posts: PostRow[]): ExperimentCardData[] {
 export function toExperimentDetailProps(
   post: PostRow,
   mediaRows: MediaRow[],
+  contentType?: ContentTypeRow,
 ): ExperimentDetailProps {
   const extra = (post.extra ?? {}) as ExperimentExtra;
   const extraCategory = extra as any;
@@ -187,7 +225,7 @@ export function toExperimentDetailProps(
   const screenshotUrls = mediaRows.map((m) => m.public_url);
 
   return {
-    num: extra.num ?? '',
+    num: extra.num ?? (post as any).display_number ?? '',
     date: formatExperimentDate(post.published_at),
     category: extraCategory.category ?? post.subtitle,
     title: post.title,
@@ -195,6 +233,11 @@ export function toExperimentDetailProps(
     optimization: extra.optimization ?? [],
     selfTraining: extra.self_training ?? [],
     screenshotUrls,
+    summary: post.summary,
+    bodyMd: post.body_md,
+    categoryLabel: contentType?.category_label || post.subtitle,
+    typeLabel: contentType?.type_label || contentType?.name || '',
+    backLabel: undefined, // set by caller if available
   };
 }
 

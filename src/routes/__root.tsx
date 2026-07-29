@@ -19,7 +19,7 @@ import { getAllPages } from "@/lib/cms/queries/pages";
 import { getPostBySlug, getPostSections, getPostsByContentType } from "@/lib/cms/queries/posts";import { toPageSeoProps } from "@/lib/cms/mappers";
 import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps, toResearchFullProps, toExperimentCardData, toResumeProps } from "@/lib/cms/mappers";
 import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps, ExperimentsListProps, ResumeProps, PageSeoProps } from "@/lib/cms/types";
-import { CmsProvider, setCmsData, type CmsRootData } from "@/lib/cms/context";
+import { CmsProvider, type CmsRootData } from "@/lib/cms/context";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -208,46 +208,29 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const ctx = Route.useRouteContext() as any;
+  const queryClient = ctx.queryClient;
   
-  // useMatches() MUST be called at component top level (React Hooks rule)
-  const matches = useMatches();
-  
-  // ONCE: store CMS data when first available (SSR or first CSR render)
-  // NEVER recalculate, to avoid blanking out on hash-change re-renders
-  const [cmsData, setCmsDataState] = useState<CmsRootData | null>(null);
-  const initialized = useRef(false);
-  
-  // Initialize CMS data from root match context
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-    
-    const rootMatch = matches.find(m => m.routeId === '__root__');
-    const rootCtx = (rootMatch as any)?.context ?? {};
-    const data: CmsRootData = {
-      siteSettings: rootCtx.siteSettings ?? null,
-      heroProps: rootCtx.heroProps ?? null,
-      footerProps: rootCtx.footerProps ?? null,
-      fixedNavProps: rootCtx.fixedNavProps ?? null,
-      researchProps: rootCtx.researchProps ?? null,
-      experimentsListProps: rootCtx.experimentsListProps ?? null,
-      resumeProps: rootCtx.resumeProps ?? null,
-      sectionTabsProps: rootCtx.sectionTabsProps ?? null,
-      pageSeoMap: rootCtx.pageSeoMap ?? {},
-    };
-    if (data.siteSettings) {
-      setCmsDataState(data);
-      setCmsData(data); // sync to global store
-    }
-  }, [matches]);
+  // No caching — read directly from route context every render
+  // beforeLoad() runs on each SSR request, so data is always fresh
+  const cmsData: CmsRootData = {
+    siteSettings: ctx.siteSettings ?? null,
+    heroProps: ctx.heroProps ?? null,
+    footerProps: ctx.footerProps ?? null,
+    fixedNavProps: ctx.fixedNavProps ?? null,
+    researchProps: ctx.researchProps ?? null,
+    experimentsListProps: ctx.experimentsListProps ?? null,
+    resumeProps: ctx.resumeProps ?? null,
+    sectionTabsProps: ctx.sectionTabsProps ?? null,
+    pageSeoMap: ctx.pageSeoMap ?? {},
+  };
 
-  // Sync document title on data change
+  // Sync document title
   useEffect(() => {
-    if (cmsData?.siteSettings?.site_title) {
+    if (cmsData.siteSettings?.site_title) {
       document.title = cmsData.siteSettings.site_title;
     }
-  }, [cmsData?.siteSettings?.site_title]);
+  }, [cmsData.siteSettings?.site_title]);
 
   return (
     <QueryClientProvider client={queryClient}>

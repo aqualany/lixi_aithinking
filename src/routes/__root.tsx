@@ -242,12 +242,25 @@ function RootComponent() {
     pageSeoMap: ctx.pageSeoMap ?? {},
   };
 
-  // Sync document title
+  // Sync document title and favicon dynamically (head() can't access context during SSR)
   useEffect(() => {
     if (cmsData.siteSettings?.site_title) {
       document.title = cmsData.siteSettings.site_title;
     }
-  }, [cmsData.siteSettings?.site_title]);
+    // Set favicon from resolved URL with cache busting
+    const faviconUrl = (cmsData.siteSettings as any)?._faviconUrl;
+    if (faviconUrl) {
+      const existing = document.querySelector('link[rel="icon"]');
+      if (existing) {
+        (existing as HTMLLinkElement).href = faviconUrl + '?v=' + Date.now();
+      } else {
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.href = faviconUrl + '?v=' + Date.now();
+        document.head.appendChild(link);
+      }
+    }
+  }, [cmsData.siteSettings?.site_title, (cmsData.siteSettings as any)?._faviconUrl]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -90,9 +90,11 @@ export function toFooterProps(
     isExternal: n.is_external,
   }));
   let contactLinks: ContactLink[] = [];
-  if (Array.isArray((settings as any).contact_links)) {
-    contactLinks = (settings as any).contact_links as ContactLink[];
-  } else if (settings.contact_email || settings.github_url) {
+  const rawContactLinks = (settings as any).contact_links;
+  if (Array.isArray(rawContactLinks) && rawContactLinks.length > 0) {
+    contactLinks = rawContactLinks as ContactLink[];
+  }
+  if (contactLinks.length === 0) {
     if (settings.contact_email) {
       contactLinks.push({ label: settings.contact_email, value: settings.contact_email, href: `mailto:${settings.contact_email}` });
     }

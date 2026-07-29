@@ -19,7 +19,7 @@ import { getAllPages } from "@/lib/cms/queries/pages";
 import { getPostBySlug, getPostSections, getPostsByContentType } from "@/lib/cms/queries/posts";import { toPageSeoProps } from "@/lib/cms/mappers";
 import { toFooterProps, toHeroProps, toFixedNavProps, toSectionTabsProps, toResearchFullProps, toExperimentCardData, toResumeProps } from "@/lib/cms/mappers";
 import type { SiteSettingsRow, FooterProps, HeroProps, FixedNavProps, SectionTabsProps, ResearchFullProps, ExperimentsListProps, ResumeProps, PageSeoProps } from "@/lib/cms/types";
-import { CmsProvider, type CmsRootData } from "@/lib/cms/context";
+import { CmsProvider, setCmsData, type CmsRootData } from "@/lib/cms/context";
 
 // ── Route context type ─────────────────────────────────────
 interface RootRouteContext {
@@ -208,14 +208,12 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  // UseMatches() reliably returns the root match with FULL context on both SSR and CSR
-  // beforeLoad() data is always available in the match context
+  const { queryClient } = Route.useRouteContext();
+  
+  // Build CMS data — useMatches() is reliable on all navigations
   const matches = useMatches();
   const rootMatch = matches.find(m => m.routeId === '__root__');
   const rootCtx = (rootMatch as any)?.context ?? {};
-  const queryClient = rootCtx.queryClient;
-  
-  // Build CMS data from root match context — always fresh, no cache
   const cmsData: CmsRootData = {
     siteSettings: rootCtx.siteSettings ?? null,
     heroProps: rootCtx.heroProps ?? null,
@@ -227,6 +225,10 @@ function RootComponent() {
     sectionTabsProps: rootCtx.sectionTabsProps ?? null,
     pageSeoMap: rootCtx.pageSeoMap ?? {},
   };
+  // Sync to global store for reliable access on CSR
+  if (cmsData.siteSettings) {
+    setCmsData(cmsData);
+  }
 
   // Sync document title from CMS data (bypass head() limitation)
   useEffect(() => {

@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useMatches,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -207,23 +208,24 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  // Read CMS data from route context EVERY render
-  // beforeLoad() runs on every SSR request and returns fresh Supabase data
-  // On CSR (SPA navigation), uses the SSR serialized data (last saved state)
-  const ctx = Route.useRouteContext() as any;
-  const { queryClient } = ctx;
+  // UseMatches() reliably returns the root match with FULL context on both SSR and CSR
+  // beforeLoad() data is always available in the match context
+  const matches = useMatches();
+  const rootMatch = matches.find(m => m.routeId === '__root__');
+  const rootCtx = (rootMatch as any)?.context ?? {};
+  const queryClient = rootCtx.queryClient;
   
-  // Always build fresh from context — no module-level cache
+  // Build CMS data from root match context — always fresh, no cache
   const cmsData: CmsRootData = {
-    siteSettings: ctx.siteSettings ?? null,
-    heroProps: ctx.heroProps ?? null,
-    footerProps: ctx.footerProps ?? null,
-    fixedNavProps: ctx.fixedNavProps ?? null,
-    researchProps: ctx.researchProps ?? null,
-    experimentsListProps: ctx.experimentsListProps ?? null,
-    resumeProps: ctx.resumeProps ?? null,
-    sectionTabsProps: ctx.sectionTabsProps ?? null,
-    pageSeoMap: ctx.pageSeoMap ?? {},
+    siteSettings: rootCtx.siteSettings ?? null,
+    heroProps: rootCtx.heroProps ?? null,
+    footerProps: rootCtx.footerProps ?? null,
+    fixedNavProps: rootCtx.fixedNavProps ?? null,
+    researchProps: rootCtx.researchProps ?? null,
+    experimentsListProps: rootCtx.experimentsListProps ?? null,
+    resumeProps: rootCtx.resumeProps ?? null,
+    sectionTabsProps: rootCtx.sectionTabsProps ?? null,
+    pageSeoMap: rootCtx.pageSeoMap ?? {},
   };
 
   // Sync document title from CMS data (bypass head() limitation)

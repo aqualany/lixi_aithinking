@@ -2,10 +2,12 @@
 // Phase 3: Data access layer
 // Renders Markdown (body_md) or rich HTML (extra.body_html) into .prose-article CSS classes
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
 import { sanitizeHtml } from './rich-html';
 
 const customComponents: Components = {
@@ -64,6 +66,40 @@ export function ProseHtml({ content }: { content: string }) {
 
 /** Pick HTML body when present, else fall back to legacy markdown. */
 export function ArticleBody({ html, markdown }: { html?: string | null; markdown?: string | null }) {
-  if (html && html.trim()) return <ProseHtml content={html} />;
-  return <ProseMarkdown content={markdown || ''} />;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [index, setIndex] = useState(0);
+  const [slides, setSlides] = useState<{ src: string }[]>([]);
+
+  // Click on any image inside the article → open lightbox gallery at that image.
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = (e.target as HTMLElement).closest('img');
+    if (!target || !containerRef.current) return;
+    const imgs = Array.from(containerRef.current.querySelectorAll('img'));
+    const idx = imgs.indexOf(target as HTMLImageElement);
+    if (idx === -1) return;
+    setSlides(
+      imgs.map((img) => ({
+        src: (img as HTMLImageElement).src || img.getAttribute('src') || '',
+      })),
+    );
+    setIndex(idx);
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <div ref={containerRef} className="article-body" onClick={handleClick}>
+        {html && html.trim() ? <ProseHtml content={html} /> : <ProseMarkdown content={markdown || ''} />}
+      </div>
+      {open && (
+        <Lightbox
+          open={open}
+          close={() => setOpen(false)}
+          index={index}
+          slides={slides}
+        />
+      )}
+    </>
+  );
 }

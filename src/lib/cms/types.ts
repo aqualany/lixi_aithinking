@@ -123,14 +123,12 @@ export interface ExperimentDetailProps {
   date: string;
   category: string;
   title: string;
-  hypothesis: string;
-  optimization: string[];
-  selfTraining: string[];
-  screenshotUrls: string[];
   summary: string;
   bodyMd: string;
   /** Rich text HTML body (new editor). Preferred over bodyMd. */
   bodyHtml?: string;
+  /** Auto-generated TOC from body H1/H2/H3 (same as research article) */
+  sections: { id: string; heading: string }[];
   categoryLabel?: string;
   typeLabel?: string;
   backLabel?: string;

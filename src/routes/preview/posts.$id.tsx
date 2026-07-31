@@ -13,7 +13,6 @@ import { useCmsData } from "@/lib/cms/context";
 import { createSsrClient } from "@/lib/cms/supabase.server";
 import { toResearchFullProps, toExperimentDetailProps, formatChineseDate, formatExperimentDate } from "@/lib/cms/mappers";
 import { extractHeadings } from "@/lib/cms/rich-html";
-import { supabase } from "@/integrations/supabase/client";
 import type { ResearchFullProps, ExperimentDetailProps } from "@/lib/cms/types";
 
 export const Route = createFileRoute("/preview/posts/$id")({
@@ -31,12 +30,7 @@ export const Route = createFileRoute("/preview/posts/$id")({
       const ct = (post as any).content_types;
       const slug = ct?.slug ?? 'research';
       if (slug === 'experiment') {
-        const extra = (post.extra ?? {}) as any;
-        const mediaIds: string[] = extra.screenshot_media_ids ?? [];
-        const { data: mediaRows } = mediaIds.length
-          ? await (supabase.from('media').select('*').in('id', mediaIds) as any)
-          : { data: [] };
-        return { dbData: { contentTypeSlug: 'experiment', props: toExperimentDetailProps(post as any, (mediaRows ?? []) as any) } };
+        return { dbData: { contentTypeSlug: 'experiment', props: toExperimentDetailProps(post as any) } };
       }
       const { data: sections } = await (supabase
         .from('post_sections')
@@ -62,7 +56,6 @@ function PreviewPage() {
   const cmsData = useCmsData();
   const { dbData } = Route.useRouteContext();
   const [draft, setDraft] = useState<any>(null);
-  const [screenshotUrls, setScreenshotUrls] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -70,17 +63,6 @@ function PreviewPage() {
       if (raw) setDraft(JSON.parse(raw));
     } catch {}
   }, [id]);
-
-  // Resolve screenshot media ids → urls for experiment drafts
-  useEffect(() => {
-    if (!draft || draft.contentTypeSlug !== 'experiment') return;
-    const ids: string[] = draft.screenshotMediaIds ?? [];
-    if (ids.length === 0) return;
-    (supabase.from('media') as any)
-      .select('public_url')
-      .in('id', ids)
-      .then(({ data }: any) => setScreenshotUrls((data ?? []).map((m: any) => m.public_url)));
-  }, [draft]);
 
   const authorName = cmsData?.siteSettings?.author_name ?? '';
 
@@ -95,13 +77,10 @@ function PreviewPage() {
         date: formatExperimentDate(draft.publishedAt ?? null),
         category: draft.subtitle ?? '',
         title: draft.title ?? '',
-        hypothesis: draft.hypothesis ?? '',
-        optimization: draft.optimization ?? [],
-        selfTraining: draft.selfTraining ?? [],
-        screenshotUrls,
         summary: draft.summary ?? '',
         bodyHtml: draft.bodyHtml ?? '',
         bodyMd: '',
+        sections: extractHeadings(draft.bodyHtml ?? '').map((s) => ({ id: s.anchor, heading: s.title })),
         categoryLabel: draft.subtitle ?? '',
         backLabel: '← 返回',
       };

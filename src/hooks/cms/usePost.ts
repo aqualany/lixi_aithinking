@@ -9,13 +9,11 @@ import {
   toExperimentDetailProps,
   toResumeProps,
 } from '@/lib/cms/mappers';
-import { getMediaByIds } from '@/lib/cms/queries/media';
 import { getSiteSettings } from '@/lib/cms/queries/site';
 import type {
   ResearchFullProps,
   ExperimentDetailProps,
   ResumeProps,
-  ExperimentExtra,
 } from '@/lib/cms/types';
 
 /** Research article — combined query for post + sections + author */
@@ -37,19 +35,14 @@ export function useResearchPost(slug: string) {
   });
 }
 
-/** Experiment detail — post + screenshots */
+/** Experiment detail — post (rich body, no legacy experiment modules) */
 export function useExperimentDetail(slug: string) {
   return useQuery({
     queryKey: ['cms', 'experiment', slug],
     queryFn: async (): Promise<ExperimentDetailProps | null> => {
       const post = await getPostBySlug(supabase, slug);
       if (!post) return null;
-
-      const extra = (post.extra ?? {}) as ExperimentExtra;
-      const mediaIds = extra.screenshot_media_ids ?? [];
-      const mediaRows = await getMediaByIds(supabase, mediaIds);
-
-      return toExperimentDetailProps(post, mediaRows);
+      return toExperimentDetailProps(post);
     },
     staleTime: 1000 * 60 * 10,
   });

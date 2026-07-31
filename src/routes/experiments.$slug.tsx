@@ -5,7 +5,6 @@ import { ExperimentArticle } from "@/components/portfolio/ExperimentArticle";
 import { useCmsData } from "@/lib/cms/context";
 import { createSsrClient } from "@/lib/cms/supabase.server";
 import { getPostBySlug } from "@/lib/cms/queries/posts";
-import { getMediaByIds } from "@/lib/cms/queries/media";
 import { toExperimentDetailProps } from "@/lib/cms/mappers";
 import type { ExperimentDetailProps } from "@/lib/cms/types";
 
@@ -15,11 +14,7 @@ export const Route = createFileRoute("/experiments/$slug")({
       const supabase = createSsrClient();
       const post = await getPostBySlug(supabase, params.slug);
       if (!post) return { expDetail: null };
-      const extra = (post.extra ?? {}) as any;
-      const mediaIds: string[] = extra.screenshot_media_ids ?? [];
-
-      const mediaRows = mediaIds.length > 0 ? await getMediaByIds(supabase, mediaIds) : [];
-      const detail = toExperimentDetailProps(post, mediaRows);
+      const detail = toExperimentDetailProps(post);
       detail.backLabel = '← 返回';
       return { expDetail: detail };
     } catch {

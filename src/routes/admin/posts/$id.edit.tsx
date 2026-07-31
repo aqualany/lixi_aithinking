@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster, toast } from "sonner";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { MediaPicker } from "@/components/admin/MediaPicker";
 import { generateSlug } from "@/lib/utils";
 import { markdownToHtml, processHtmlHeadings, extractHeadings } from "@/lib/cms/rich-html";
 
@@ -27,10 +26,6 @@ function PostEditPage() {
     published_at: '', word_count: '',
   });
   const [bodyHtml, setBodyHtml] = useState('');
-  const [exp, setExp] = useState<any>({
-    num: '', hypothesis: '', optimization: ['', '', ''], self_training: ['', ''],
-    screenshot_media_ids: [],
-  });
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [slugEdited, setSlugEdited] = useState(false);
@@ -73,13 +68,6 @@ function PostEditPage() {
               word_count: extra.word_count ?? '',
             });
             setBodyHtml(extra.body_html ?? markdownToHtml(data.body_md ?? ''));
-            setExp({
-              num: extra.num ?? '',
-              hypothesis: extra.hypothesis ?? '',
-              optimization: extra.optimization ?? ['', '', ''],
-              self_training: extra.self_training ?? ['', ''],
-              screenshot_media_ids: extra.screenshot_media_ids ?? [],
-            });
             setSlugEdited(true);
           }
           setLoaded(true);
@@ -124,13 +112,6 @@ function PostEditPage() {
       extra.word_count = Number(form.word_count);
     } else {
       delete extra.word_count;
-    }
-    if (isExperiment) {
-      extra.num = exp.num || '';
-      extra.hypothesis = exp.hypothesis || '';
-      extra.optimization = (exp.optimization || []).filter((s: string) => s.trim());
-      extra.self_training = (exp.self_training || []).filter((s: string) => s.trim());
-      extra.screenshot_media_ids = exp.screenshot_media_ids || [];
     }
     const payload: any = {
       content_type_id: form.content_type_id,
@@ -191,11 +172,6 @@ function PostEditPage() {
       bodyHtml: bodyHtmlNorm,
       publishedAt: form.published_at || null,
       wordCount: form.word_count !== '' ? Number(form.word_count) : 0,
-      num: exp.num || '',
-      hypothesis: exp.hypothesis || '',
-      optimization: (exp.optimization || []).filter((s: string) => s.trim()),
-      selfTraining: (exp.self_training || []).filter((s: string) => s.trim()),
-      screenshotMediaIds: exp.screenshot_media_ids || [],
     };
     const key = isNew ? 'new' : currentId;
     try {
@@ -224,7 +200,7 @@ function PostEditPage() {
         </button>
       </div>
       <p className="text-sm text-stone-400 mb-8">
-        {isExperiment ? '与AI创作中 · 富文本编辑器' : '当下的思考 · 富文本编辑器'}
+        富文本编辑器 · H1/H2/H3 自动生成目录
       </p>
 
       <div className="grid grid-cols-3 gap-6">
@@ -263,100 +239,6 @@ function PostEditPage() {
               </div>
             </div>
           </section>
-
-          {isExperiment && (
-            <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-              <h2 className="text-sm font-medium text-stone-700 mb-4">实验信息（可选）</h2>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-stone-400 mb-1">
-                      编号
-                      <span className="ml-1 text-[10px] text-stone-300">（如 "笔记 01"）</span>
-                    </label>
-                    <input
-                      value={exp.num}
-                      onChange={e => { markDirty(); setExp({ ...exp, num: e.target.value }); }}
-                      className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-stone-400 mb-1">假设 (hypothesis)</label>
-                  <textarea
-                    value={exp.hypothesis}
-                    onChange={e => { markDirty(); setExp({ ...exp, hypothesis: e.target.value }); }}
-                    rows={3}
-                    className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-stone-400 mb-1">优化过程 (optimization)</label>
-                  <div className="space-y-2">
-                    {exp.optimization.map((v: string, i: number) => (
-                      <textarea
-                        key={i}
-                        value={v}
-                        onChange={e => {
-                          const arr = [...exp.optimization];
-                          arr[i] = e.target.value;
-                          markDirty();
-                          setExp({ ...exp, optimization: arr });
-                        }}
-                        rows={2}
-                        placeholder={`步骤 ${i + 1}`}
-                        className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-                      />
-                    ))}
-                    <button
-                      onClick={() => { markDirty(); setExp({ ...exp, optimization: [...exp.optimization, ''] }); }}
-                      className="text-xs text-stone-500 hover:text-stone-700"
-                    >
-                      + 添加步骤
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-stone-400 mb-1">自训练思路 (self_training)</label>
-                  <div className="space-y-2">
-                    {exp.self_training.map((v: string, i: number) => (
-                      <textarea
-                        key={i}
-                        value={v}
-                        onChange={e => {
-                          const arr = [...exp.self_training];
-                          arr[i] = e.target.value;
-                          markDirty();
-                          setExp({ ...exp, self_training: arr });
-                        }}
-                        rows={2}
-                        placeholder={`思路 ${i + 1}`}
-                        className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-                      />
-                    ))}
-                    <button
-                      onClick={() => { markDirty(); setExp({ ...exp, self_training: [...exp.self_training, ''] }); }}
-                      className="text-xs text-stone-500 hover:text-stone-700"
-                    >
-                      + 添加思路
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-stone-400 mb-1">
-                    对话截图（可选）
-                    <span className="ml-1 text-[10px] text-stone-300">前台以可滑动截图展示</span>
-                  </label>
-                  <MediaPicker
-                    category="experiment"
-                    selectedIds={exp.screenshot_media_ids || []}
-                    onSelect={(ids) => { markDirty(); setExp({ ...exp, screenshot_media_ids: ids }); }}
-                    max={10}
-                  />
-                </div>
-              </div>
-            </section>
-          )}
         </div>
 
         {/* Right: Meta + Settings */}

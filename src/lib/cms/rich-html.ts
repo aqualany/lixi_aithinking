@@ -26,13 +26,13 @@ export function markdownToHtml(md: string): string {
   }
 }
 
-const HEADING_RE = /<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi;
+const HEADING_RE = /<h([123])([^>]*)>([\s\S]*?)<\/h\1>/gi;
 
 function headingText(inner: string): string {
   return inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 }
 
-/** Extract h2/h3 headings as {anchor, title} in document order (no mutation). */
+/** Extract h1/h2/h3 headings as {anchor, title} in document order (no mutation). */
 export function extractHeadings(html: string): { anchor: string; title: string }[] {
   const out: { anchor: string; title: string }[] = [];
   const re = new RegExp(HEADING_RE.source, 'gi');
@@ -51,7 +51,7 @@ export function extractHeadings(html: string): { anchor: string; title: string }
 }
 
 /**
- * Ensure every h2/h3 carries an id (sec-1, sec-2 … in document order, keeping
+ * Ensure every h1/h2/h3 carries an id (sec-1, sec-2 … in document order, keeping
  * existing ids) and return the normalized HTML + extracted sections.
  * Used on save so sidebar anchor links (#sec-N) resolve.
  */
@@ -61,7 +61,7 @@ export function processHtmlHeadings(html: string): {
 } {
   const sections: { anchor: string; title: string }[] = [];
   let i = 0;
-  const out = html.replace(/<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi, (full, lvl, attrs, inner) => {
+  const out = html.replace(/<h([123])([^>]*)>([\s\S]*?)<\/h\1>/gi, (full, lvl, attrs, inner) => {
     i++;
     const a = attrs ?? '';
     const existing = a.match(/id="([^"]+)"/);

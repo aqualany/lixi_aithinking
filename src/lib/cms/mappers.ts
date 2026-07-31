@@ -24,6 +24,7 @@ import type {
   PostDisplayProps,
   ContactLink,
 } from './types';
+import { extractHeadings } from './rich-html';
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -217,27 +218,24 @@ export function toExperimentCardData(posts: PostRow[]): ExperimentCardData[] {
 
 // ── Experiment detail ─────────────────────────────────────
 
-export function toExperimentDetailProps(
-  post: PostRow,
-  mediaRows: MediaRow[],
-): ExperimentDetailProps {
+export function toExperimentDetailProps(post: PostRow): ExperimentDetailProps {
   const extra = (post.extra ?? {}) as ExperimentExtra;
-  const extraCategory = extra as any;
-
-  const screenshotUrls = mediaRows.map((m) => m.public_url);
+  const bodyHtml = (extra as any).body_html ?? '';
+  const bodyMd = post.body_md;
+  // Auto TOC from body H1/H2/H3 — identical rules to research article
+  const sections = (bodyHtml || '').trim()
+    ? extractHeadings(bodyHtml).map((s) => ({ id: s.anchor, heading: s.title }))
+    : [];
 
   return {
     num: extra.num ?? (post as any).display_number ?? '',
     date: formatExperimentDate(post.published_at),
     category: post.subtitle,
     title: post.title,
-    hypothesis: extra.hypothesis ?? '',
-    optimization: extra.optimization ?? [],
-    selfTraining: extra.self_training ?? [],
-    screenshotUrls,
     summary: post.summary,
-    bodyMd: post.body_md,
-    bodyHtml: (extra as any).body_html ?? undefined,
+    bodyMd,
+    bodyHtml: bodyHtml || undefined,
+    sections,
     categoryLabel: post.subtitle,
     backLabel: undefined,
   };

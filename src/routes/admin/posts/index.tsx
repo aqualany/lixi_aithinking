@@ -35,7 +35,7 @@ function PostListPage() {
     <div>
       <div className="flex items-center justify-between mb-1">
         <h1 className="text-xl font-medium text-stone-800">文章管理</h1>
-        <a href="/admin/posts/new" className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 transition-colors inline-block">+ 新建</a>
+        <a href="/admin/posts/new/edit" className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 transition-colors inline-block">+ 新建</a>
       </div>
       <p className="text-sm text-stone-400 mb-8">共 {posts.length} 篇</p>
 
@@ -58,7 +58,7 @@ function PostListPage() {
                 <td className="px-5 py-4">{statusBadge(p.status)}</td>
                 <td className="px-5 py-4 text-xs text-stone-400">{p.updated_at?.slice(0, 10)}</td>
                 <td className="px-5 py-4 text-right">
-                  <Link to="/admin/posts/$id/edit" params={{ id: p.id }} className="text-stone-500 hover:text-stone-800 text-xs mr-4 transition-colors">编辑</Link>
+                  <Link to="/admin/posts/$id/edit" params={{ id: p.id }} search={{ type: undefined }} className="text-stone-500 hover:text-stone-800 text-xs mr-4 transition-colors">编辑</Link>
                   <button onClick={() => del(p.id)} className="text-stone-400 hover:text-red-500 text-xs transition-colors">删除</button>
                 </td>
               </tr>

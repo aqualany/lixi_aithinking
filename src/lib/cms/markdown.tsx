@@ -1,11 +1,12 @@
-// src/lib/cms/markdown.tsx — body_md → React nodes
+// src/lib/cms/markdown.tsx — article body → React nodes
 // Phase 3: Data access layer
-// Renders Markdown into existing .prose-article CSS classes
+// Renders Markdown (body_md) or rich HTML (extra.body_html) into .prose-article CSS classes
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
+import { sanitizeHtml } from './rich-html';
 
 const customComponents: Components = {
   // Map ### heading {#anchor} → <h3 id="anchor" className="scroll-mt-24">
@@ -53,4 +54,16 @@ export function ProseMarkdown({ content }: { content: string }) {
       {content}
     </ReactMarkdown>
   );
+}
+
+/** Rich text (HTML) article body — sanitized before render. */
+export function ProseHtml({ content }: { content: string }) {
+  if (!content) return null;
+  return <div className="prose-html" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />;
+}
+
+/** Pick HTML body when present, else fall back to legacy markdown. */
+export function ArticleBody({ html, markdown }: { html?: string | null; markdown?: string | null }) {
+  if (html && html.trim()) return <ProseHtml content={html} />;
+  return <ProseMarkdown content={markdown || ''} />;
 }

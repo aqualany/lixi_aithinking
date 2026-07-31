@@ -105,7 +105,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   }> => {
     try {
       const supabase = createSsrClient();
-      const [settings, headerNav, footerNav, allPages, researchPost, expPosts, resumePost, contentTypes] = await Promise.all([
+      const [settings, headerNav, footerNav, allPages, researchPost, expPosts, resumePost] = await Promise.all([
         getSiteSettings(supabase),
         getNavigation(supabase, 'header'),
         getNavigation(supabase, 'footer'),
@@ -113,7 +113,6 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         getPostBySlug(supabase, 'fluent-after'),
         getPostsByContentType(supabase, 'experiment'),
         getPostBySlug(supabase, 'main'),
-        supabase.from('content_types').select('*').order('sort_order').then(({ data }: any) => data ?? []),
       ]);
       const researchSections = researchPost ? await getPostSections(supabase, researchPost.id) : [];
       // Resolve avatar and favicon URLs from media table
@@ -134,10 +133,8 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
         }
       }
       const experimentsListProps: ExperimentsListProps | null = expPosts ? {
-        experiments: toExperimentCardData(expPosts, contentTypes as any[] || undefined),
+        experiments: toExperimentCardData(expPosts),
         pageDescription: allPages.find(p => p.slug === 'experiments')?.description || '',
-        categoryLabel: (contentTypes as any[])?.find((ct: any) => ct.slug === 'experiment')?.category_label || '',
-        typeLabel: (contentTypes as any[])?.find((ct: any) => ct.slug === 'experiment')?.type_label || '',
       } : null;
       const resumeProps: ResumeProps | null = resumePost ? toResumeProps(resumePost) : null;
       const pageSeoMap: Record<string, PageSeoProps> = {};
@@ -147,7 +144,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       const sectionTabs = toSectionTabsProps(allPages, headerNav);
       const researchProps =
         settings && researchPost && researchSections
-          ? toResearchFullProps(researchPost, researchSections, settings.author_name, (contentTypes as any[])?.find((ct: any) => ct.id === researchPost.content_type_id))
+          ? toResearchFullProps(researchPost, researchSections, settings.author_name)
           : null;
 
       return {

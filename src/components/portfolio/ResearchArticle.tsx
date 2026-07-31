@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ProseMarkdown } from "@/lib/cms/markdown";
+import { ProseMarkdown, ArticleBody } from "@/lib/cms/markdown";
 import type { ResearchFullProps } from "@/lib/cms/types";
 
 function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitle?: boolean }) {
@@ -66,7 +66,8 @@ function Sidebar({ data, activeOnly }: { data: ResearchFullProps; activeOnly?: b
 
 export function ResearchPreview({ data }: { data?: ResearchFullProps }) {
   if (!data) return null;
-  const previewBody = data.previewBodyMd || data.bodyMd;
+  const previewBody = data.previewBodyHtml || data.previewBodyMd || data.bodyHtml || data.bodyMd;
+  const previewHtml = data.previewBodyHtml || data.bodyHtml;
   return (
     <section id="research"
       className="scroll-mt-24 border-t border-border bg-background">
@@ -76,7 +77,7 @@ export function ResearchPreview({ data }: { data?: ResearchFullProps }) {
           <div>
             <div className="relative">
               <article className="prose-article fade-mask-b">
-                <ProseMarkdown content={previewBody} />
+                <ArticleBody html={previewHtml} markdown={previewBody} />
               </article>
             </div>
             <div className="mt-8 flex justify-center">
@@ -120,7 +121,7 @@ export function ResearchFull({ data }: { data?: ResearchFullProps }) {
         <Header data={data} />
         <div className="mt-14 md:grid md:grid-cols-[1fr_180px] md:gap-x-10">
           <article className="prose-article">
-            <ProseMarkdown content={data.bodyMd} />
+            <ArticleBody html={data.bodyHtml} markdown={data.bodyMd} />
           </article>
           <Sidebar data={data} activeOnly />
         </div>

@@ -52,7 +52,7 @@ function AdminDashboard() {
       <h2 className="text-sm font-medium text-stone-600 mt-10 mb-4">快捷操作</h2>
       <div className="grid grid-cols-2 gap-3">
         {[
-          { label: "写新文章", to: "/admin/posts/new", sub: "Markdown 编辑器" },
+          { label: "写新文章", to: "/admin/posts/new/edit", sub: "富文本编辑器" },
           { label: "管理导航", to: "/admin/navigation", sub: "Header / Footer" },
           { label: "站点配置", to: "/admin/settings", sub: "名称 / 简介" },
           { label: "上传媒体", to: "/admin/media", sub: "图片管理" },

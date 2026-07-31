@@ -191,6 +191,8 @@ html {
 .prose-article p:first-of-type {
   text-indent: 0;
 }
+.prose-article h1,
+.prose-article h2,
 .prose-article h3 {
   text-indent: 0;
   font-family: var(--font-serif);
@@ -198,6 +200,13 @@ html {
   letter-spacing: 0.02em;
   margin-top: 2.5em;
   margin-bottom: 0.6em;
+  scroll-margin-top: 6rem;
+}
+.prose-article h1 {
+  font-size: 1.75em;
+}
+.prose-article h2 {
+  font-size: 1.4em;
 }
 .prose-article ul,
 .prose-article ol,
@@ -210,9 +219,44 @@ html {
   text-indent: 0;
   padding: 0.15em 0;
 }
+.prose-article blockquote {
+  border-left: 2px solid var(--foreground);
+  padding-left: 1.4em;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+.prose-article a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: var(--foreground);
+}
+.prose-article img {
+  text-indent: 0;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2em auto;
+  border: 1px solid var(--border);
+}
+.prose-article strong {
+  font-weight: 600;
+}
 .prose-article em {
   font-style: italic;
   color: var(--foreground);
+}
+.prose-article hr {
+  border: none;
+  margin: 3rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--muted-foreground);
+  font-family: var(--font-serif);
+  letter-spacing: 0.4em;
+}
+.prose-article hr::after {
+  content: "· · ·";
 }
 
 .divider-dots {
@@ -225,6 +269,89 @@ html {
   letter-spacing: 0.4em;
   margin: 3rem 0;
   user-select: none;
+}
+
+/* ── Rich text editor (TipTap) ─────────────────────────── */
+.rich-editor .ProseMirror {
+  min-height: 320px;
+  padding: 1.5rem;
+  outline: none;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+  color: var(--foreground);
+}
+.rich-editor .ProseMirror p {
+  text-indent: 2em;
+  margin: 0;
+  padding: 0.35em 0;
+}
+.rich-editor .ProseMirror p:first-child {
+  text-indent: 0;
+}
+.rich-editor .ProseMirror h1,
+.rich-editor .ProseMirror h2,
+.rich-editor .ProseMirror h3 {
+  text-indent: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+}
+.rich-editor .ProseMirror h1 {
+  font-size: 1.7em;
+}
+.rich-editor .ProseMirror h2 {
+  font-size: 1.35em;
+}
+.rich-editor .ProseMirror blockquote {
+  text-indent: 0;
+  border-left: 2px solid var(--foreground);
+  padding-left: 1.4em;
+  font-style: italic;
+  color: var(--muted-foreground);
+  margin: 1.2em 0;
+}
+.rich-editor .ProseMirror ul,
+.rich-editor .ProseMirror ol {
+  text-indent: 0;
+  padding-left: 1.6em;
+  margin: 1em 0;
+}
+.rich-editor .ProseMirror li {
+  padding: 0.15em 0;
+}
+.rich-editor .ProseMirror img {
+  text-indent: 0;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5em auto;
+  border: 1px solid var(--border);
+}
+.rich-editor .ProseMirror a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.rich-editor .ProseMirror hr {
+  border: none;
+  text-align: center;
+  margin: 2.5rem 0;
+}
+.rich-editor .ProseMirror hr::after {
+  content: "· · ·";
+  letter-spacing: 0.4em;
+  color: var(--muted-foreground);
+}
+.rich-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground);
+  opacity: 0.6;
+  pointer-events: none;
+  height: 0;
 }
 
 .zh-title {

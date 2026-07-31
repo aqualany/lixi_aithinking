@@ -91,8 +91,12 @@ export interface ResearchFullProps {
   summary: string;
   sections: ResearchSection[];
   bodyMd: string;
+  /** Rich text HTML body (new editor). Preferred over bodyMd. */
+  bodyHtml?: string;
   /** Truncated ~50% body for homepage preview */
   previewBodyMd?: string;
+  /** Full HTML for homepage preview (fade-mask handles truncation) */
+  previewBodyHtml?: string;
   /** From content_types — e.g. "研究 · 论文" */
   typeLabelMeta?: string;
   categoryLabelMeta?: string;
@@ -125,6 +129,8 @@ export interface ExperimentDetailProps {
   screenshotUrls: string[];
   summary: string;
   bodyMd: string;
+  /** Rich text HTML body (new editor). Preferred over bodyMd. */
+  bodyHtml?: string;
   categoryLabel?: string;
   typeLabel?: string;
   backLabel?: string;

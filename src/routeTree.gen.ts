@@ -22,6 +22,7 @@ import { Route as AdminResumeRouteImport } from './routes/admin/resume'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as ExperimentsSlugRouteImport } from './routes/experiments.$slug'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
+import { Route as PreviewPostsIdRouteImport } from './routes/preview/posts.$id'
 import { Route as AdminPostsIdEditRouteImport } from './routes/admin/posts/$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -89,6 +90,11 @@ const AdminPostsIndexRoute = AdminPostsIndexRouteImport.update({
   path: '/posts/',
   getParentRoute: () => AdminRoute,
 } as any)
+const PreviewPostsIdRoute = PreviewPostsIdRouteImport.update({
+  id: '/preview/posts/$id',
+  path: '/preview/posts/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPostsIdEditRoute = AdminPostsIdEditRouteImport.update({
   id: '/posts/$id/edit',
   path: '/posts/$id/edit',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/preview/posts/$id': typeof PreviewPostsIdRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/posts/$id/edit': typeof AdminPostsIdEditRoute
 }
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/preview/posts/$id': typeof PreviewPostsIdRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/posts/$id/edit': typeof AdminPostsIdEditRoute
 }
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/experiments/$slug': typeof ExperimentsSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/preview/posts/$id': typeof PreviewPostsIdRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/posts/$id/edit': typeof AdminPostsIdEditRoute
 }
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/experiments/$slug'
     | '/admin/'
+    | '/preview/posts/$id'
     | '/admin/posts/'
     | '/admin/posts/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/experiments/$slug'
     | '/admin'
+    | '/preview/posts/$id'
     | '/admin/posts'
     | '/admin/posts/$id/edit'
   id:
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/experiments/$slug'
     | '/admin/'
+    | '/preview/posts/$id'
     | '/admin/posts/'
     | '/admin/posts/$id/edit'
   fileRoutesById: FileRoutesById
@@ -198,6 +210,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   ResearchRoute: typeof ResearchRoute
   ExperimentsSlugRoute: typeof ExperimentsSlugRoute
+  PreviewPostsIdRoute: typeof PreviewPostsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPostsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/preview/posts/$id': {
+      id: '/preview/posts/$id'
+      path: '/preview/posts/$id'
+      fullPath: '/preview/posts/$id'
+      preLoaderRoute: typeof PreviewPostsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/posts/$id/edit': {
       id: '/admin/posts/$id/edit'
       path: '/posts/$id/edit'
@@ -336,6 +356,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   ResearchRoute: ResearchRoute,
   ExperimentsSlugRoute: ExperimentsSlugRoute,
+  PreviewPostsIdRoute: PreviewPostsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

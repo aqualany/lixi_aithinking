@@ -40,11 +40,15 @@ function formatChineseDate(dateStr: string | null): string {
   return `${cnYear}年${chineseMonths[month - 1]}月`;
 }
 
+export { formatChineseDate };
+
 function formatExperimentDate(dateStr: string | null): string {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   return `${d.getFullYear()} · ${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
+
+export { formatExperimentDate };
 
 function padHint(n: number): string {
   return String(n + 1).padStart(2, '0');
@@ -160,20 +164,19 @@ export function toResearchFullProps(
   post: PostRow,
   sections: PostSectionRow[],
   authorName: string,
-  contentType?: ContentTypeRow,
 ): ResearchFullProps {
   const extra = (post.extra ?? {}) as ResearchExtra;
   const bodyMd = post.body_md;
-  // Compute ~50% truncated preview at nearest paragraph break
-  const halfLen = Math.floor(bodyMd.length / 4);
+  const bodyHtml = (extra as any).body_html ?? '';
+  // Compute ~25% truncated preview at nearest paragraph break (markdown only)
+  const quarterLen = Math.floor(bodyMd.length / 4);
   const previewBodyMd = bodyMd.length > 200
     ? (() => {
-        // Find nearest paragraph break around 50%
-        const before = bodyMd.lastIndexOf('\n\n', halfLen);
-        const after = bodyMd.indexOf('\n\n', halfLen);
-        const cut = (before > halfLen - 200 && before > 0) ? before
-                  : (after > 0 && after < halfLen + 200) ? after
-                  : halfLen;
+        const before = bodyMd.lastIndexOf('\n\n', quarterLen);
+        const after = bodyMd.indexOf('\n\n', quarterLen);
+        const cut = (before > quarterLen - 200 && before > 0) ? before
+                  : (after > 0 && after < quarterLen + 200) ? after
+                  : quarterLen;
         return bodyMd.slice(0, Math.max(cut, 1));
       })()
     : bodyMd;
@@ -187,26 +190,25 @@ export function toResearchFullProps(
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((s) => ({ id: s.anchor, heading: s.title })),
     bodyMd,
+    bodyHtml: bodyHtml || undefined,
     previewBodyMd,
-    typeLabelMeta: contentType ? `${contentType.category_label || ''} · ${contentType.type_label || ''}` : undefined,
-    categoryLabelMeta: contentType?.category_label || undefined,
+    previewBodyHtml: bodyHtml || undefined,
+    typeLabelMeta: post.subtitle || '',
   };
 }
 
 // ── Experiments list ──────────────────────────────────────
 
-export function toExperimentCardData(posts: PostRow[], contentTypes?: ContentTypeRow[]): ExperimentCardData[] {
-  const ctMap = new Map(contentTypes?.map(ct => [ct.id, ct]) ?? []);
+export function toExperimentCardData(posts: PostRow[]): ExperimentCardData[] {
   return [...posts]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((p) => {
       const extra = (p.extra ?? {}) as ExperimentExtra;
-      const ct = ctMap.get(p.content_type_id);
       return {
         slug: p.slug,
         num: extra.num ?? (p as any).display_number ?? '',
         date: formatExperimentDate(p.published_at),
-        category: ct?.category_label || p.subtitle,
+        category: p.subtitle,
         title: p.title,
         keyInsight: p.summary,
       };
@@ -218,18 +220,16 @@ export function toExperimentCardData(posts: PostRow[], contentTypes?: ContentTyp
 export function toExperimentDetailProps(
   post: PostRow,
   mediaRows: MediaRow[],
-  contentType?: ContentTypeRow,
 ): ExperimentDetailProps {
   const extra = (post.extra ?? {}) as ExperimentExtra;
   const extraCategory = extra as any;
 
-  // Build screenshot URLs from media rows
   const screenshotUrls = mediaRows.map((m) => m.public_url);
 
   return {
     num: extra.num ?? (post as any).display_number ?? '',
     date: formatExperimentDate(post.published_at),
-    category: extraCategory.category ?? post.subtitle,
+    category: post.subtitle,
     title: post.title,
     hypothesis: extra.hypothesis ?? '',
     optimization: extra.optimization ?? [],
@@ -237,9 +237,9 @@ export function toExperimentDetailProps(
     screenshotUrls,
     summary: post.summary,
     bodyMd: post.body_md,
-    categoryLabel: contentType?.category_label || post.subtitle,
-    typeLabel: contentType?.type_label || contentType?.name || '',
-    backLabel: undefined, // set by caller if available
+    bodyHtml: (extra as any).body_html ?? undefined,
+    categoryLabel: post.subtitle,
+    backLabel: undefined,
   };
 }
 

@@ -9,6 +9,7 @@ import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Footer } from "@/components/portfolio/Footer";
 import { ResearchFull } from "@/components/portfolio/ResearchArticle";
 import { ExperimentArticle } from "@/components/portfolio/ExperimentArticle";
+import { buildArticleDirectory } from "@/components/portfolio/ArticleDirectory";
 import { useCmsData } from "@/lib/cms/context";
 import { createSsrClient } from "@/lib/cms/supabase.server";
 import { toResearchFullProps, toExperimentDetailProps, formatChineseDate, formatExperimentDate } from "@/lib/cms/mappers";
@@ -122,9 +123,21 @@ function PreviewPage() {
             </div>
           </div>
         ) : contentTypeSlug === 'experiment' ? (
-          <ExperimentArticle data={props as ExperimentDetailProps} />
+          <ExperimentArticle
+            data={props as ExperimentDetailProps}
+            directory={buildArticleDirectory({
+              researchTitle: cmsData?.researchProps?.title,
+              experiments: cmsData?.experimentsListProps?.experiments,
+            })}
+          />
         ) : (
-          <ResearchFull data={props as ResearchFullProps} />
+          <ResearchFull
+            data={props as ResearchFullProps}
+            directory={buildArticleDirectory({
+              researchTitle: cmsData?.researchProps?.title,
+              experiments: cmsData?.experimentsListProps?.experiments,
+            })}
+          />
         )}
       </main>
       <Footer data={cmsData?.footerProps ?? undefined} />

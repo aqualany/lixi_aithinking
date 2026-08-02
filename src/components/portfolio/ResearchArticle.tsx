@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ProseMarkdown, ArticleBody } from "@/lib/cms/markdown";
-import type { ResearchFullProps } from "@/lib/cms/types";
+import { ArticleDirectory } from "@/components/portfolio/ArticleDirectory";
+import type { ResearchFullProps, ArticleDirectoryItem } from "@/lib/cms/types";
 
 function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitle?: boolean }) {
   const Title = (
@@ -29,10 +30,6 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
         <span aria-hidden>·</span>
         <span>约 {data.wordCount.toLocaleString()} 字</span>
       </div>
-      <p className="mt-10 border-l border-foreground pl-6 font-serif text-[17px] italic leading-[1.95] tracking-[0.02em] text-foreground">
-        <span className="not-italic font-medium">摘要。</span>
-        {data.summary}
-      </p>
     </>
   );
 }
@@ -41,7 +38,6 @@ function Sidebar({ data, activeOnly }: { data: ResearchFullProps; activeOnly?: b
   return (
     <aside className="hidden md:block">
       <div className="sticky top-24 border-l border-border pl-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">目录</p>
         <ul className="mt-4 space-y-3">
           {data.sections.map((s) => (
             <li key={s.id}>
@@ -64,7 +60,7 @@ function Sidebar({ data, activeOnly }: { data: ResearchFullProps; activeOnly?: b
   );
 }
 
-export function ResearchPreview({ data }: { data?: ResearchFullProps }) {
+export function ResearchPreview({ data, directory }: { data?: ResearchFullProps; directory?: ArticleDirectoryItem[] }) {
   if (!data) return null;
   const previewBody = data.previewBodyHtml || data.previewBodyMd || data.bodyHtml || data.bodyMd;
   const previewHtml = data.previewBodyHtml || data.bodyHtml;
@@ -88,22 +84,8 @@ export function ResearchPreview({ data }: { data?: ResearchFullProps }) {
               </Link>
             </div>
 
-            {/* Sections TOC below the button */}
-            {data.sections.length > 0 && (
-              <div className="mt-12 border-t border-border pt-8">
-                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">目录</p>
-                <ul className="mt-4 space-y-2">
-                  {data.sections.map((s) => (
-                    <li key={s.id}>
-                      <Link to="/research" hash={s.id}
-                        className="font-serif text-[14px] leading-[1.7] text-muted-foreground transition-colors hover:text-foreground cursor-pointer">
-                        {s.heading}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* Site-wide article directory (research + experiments, no resume) */}
+            <ArticleDirectory items={directory ?? []} />
           </div>
           <Sidebar data={data} />
         </div>
@@ -112,7 +94,7 @@ export function ResearchPreview({ data }: { data?: ResearchFullProps }) {
   );
 }
 
-export function ResearchFull({ data }: { data?: ResearchFullProps }) {
+export function ResearchFull({ data, directory, currentKey }: { data?: ResearchFullProps; directory?: ArticleDirectoryItem[]; currentKey?: string }) {
   // Item 8: No hardcoded fallback — render nothing if no data
   if (!data) return null;
   return (
@@ -126,22 +108,8 @@ export function ResearchFull({ data }: { data?: ResearchFullProps }) {
           <Sidebar data={data} activeOnly />
         </div>
 
-        {/* Bottom TOC */}
-        {data.sections.length > 0 && (
-          <div className="mt-20 border-t border-border pt-12">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">目录</p>
-            <ul className="mt-6 space-y-3">
-              {data.sections.map((s) => (
-                <li key={s.id}>
-                  <a href={`#${s.id}`}
-                    className="font-serif text-[16px] leading-[1.8] text-foreground transition-colors hover:text-muted-foreground">
-                    {s.heading}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Bottom: site-wide article directory */}
+        <ArticleDirectory items={directory ?? []} currentKey={currentKey} />
       </div>
     </section>
   );

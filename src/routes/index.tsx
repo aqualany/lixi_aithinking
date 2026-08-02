@@ -4,6 +4,7 @@ import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Hero } from "@/components/portfolio/Hero";
 import { SectionTabs, type TabId } from "@/components/portfolio/AbstractCards";
 import { ResearchPreview } from "@/components/portfolio/ResearchArticle";
+import { buildArticleDirectory } from "@/components/portfolio/ArticleDirectory";
 import { Experiments } from "@/components/portfolio/Experiments";
 import { Resume } from "@/components/portfolio/Resume";
 import { Footer } from "@/components/portfolio/Footer";
@@ -58,7 +59,15 @@ function Index() {
       <main>
         <Hero data={cmsData?.heroProps ?? undefined} />
         <SectionTabs active={tab} onChange={(id: string) => onChange(id as any)} data={cmsData?.sectionTabsProps ?? undefined} />
-        {tab === "research" && <ResearchPreview data={cmsData?.researchProps ?? undefined} />}
+        {tab === "research" && (
+          <ResearchPreview
+            data={cmsData?.researchProps ?? undefined}
+            directory={buildArticleDirectory({
+              researchTitle: cmsData?.researchProps?.title,
+              experiments: cmsData?.experimentsListProps?.experiments,
+            })}
+          />
+        )}
         {tab === "experiments" && <Experiments data={cmsData?.experimentsListProps ?? undefined} />}
         {tab === "resume" && <Resume data={cmsData?.resumeProps ?? undefined} />}
       </main>

@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { Footer } from "@/components/portfolio/Footer";
 import { ExperimentArticle } from "@/components/portfolio/ExperimentArticle";
+import { buildArticleDirectory } from "@/components/portfolio/ArticleDirectory";
 import { useCmsData } from "@/lib/cms/context";
 import { createSsrClient } from "@/lib/cms/supabase.server";
 import { getPostBySlug } from "@/lib/cms/queries/posts";
@@ -50,6 +51,7 @@ export const Route = createFileRoute("/experiments/$slug")({
 
 function ExperimentDetail() {
   const cmsData = useCmsData();
+  const { slug } = Route.useParams();
   const { expDetail } = Route.useRouteContext() as { expDetail: ExperimentDetailProps | null };
 
   if (!expDetail) {
@@ -79,7 +81,14 @@ function ExperimentDetail() {
             {d.backLabel || '← 返回'}
           </Link>
         </div>
-        <ExperimentArticle data={d} />
+        <ExperimentArticle
+          data={d}
+          directory={buildArticleDirectory({
+            researchTitle: cmsData?.researchProps?.title,
+            experiments: cmsData?.experimentsListProps?.experiments,
+          })}
+          currentKey={`experiment:${slug}`}
+        />
       </main>
       <Footer data={cmsData?.footerProps ?? undefined} />
     </div>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FixedNav } from "@/components/portfolio/FixedNav";
 import { ResearchFull } from "@/components/portfolio/ResearchArticle";
+import { buildArticleDirectory } from "@/components/portfolio/ArticleDirectory";
 import { Footer } from "@/components/portfolio/Footer";
 import { useCmsData } from "@/lib/cms/context";
 import type { FooterProps, FixedNavProps, ResearchFullProps } from "@/lib/cms/types";
@@ -35,7 +36,14 @@ function ResearchPage() {
             ← 返回
           </Link>
         </div>
-        <ResearchFull data={cmsData?.researchProps ?? undefined} />
+        <ResearchFull
+          data={cmsData?.researchProps ?? undefined}
+          directory={buildArticleDirectory({
+            researchTitle: cmsData?.researchProps?.title,
+            experiments: cmsData?.experimentsListProps?.experiments,
+          })}
+          currentKey="research"
+        />
       </main>
       <Footer data={cmsData?.footerProps ?? undefined} />
     </div>

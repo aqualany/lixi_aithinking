@@ -197,8 +197,8 @@ html {
 .prose-article h2,
 .prose-article h3 {
   text-indent: 0;
-  font-family: var(--font-serif);
-  font-weight: 500;
+  font-family: var(--font-zhuque);
+  font-weight: 400;
   letter-spacing: 0.02em;
   margin-top: 2.5em;
   margin-bottom: 0.6em;
@@ -297,8 +297,8 @@ html {
 .rich-editor .ProseMirror h2,
 .rich-editor .ProseMirror h3 {
   text-indent: 0;
-  font-family: var(--font-serif);
-  font-weight: 500;
+  font-family: var(--font-zhuque);
+  font-weight: 400;
   letter-spacing: 0.02em;
   margin-top: 1.6em;
   margin-bottom: 0.5em;
@@ -358,7 +358,7 @@ html {
 }
 
 .zh-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-zhuque);
   letter-spacing: 0.03em;
   line-height: 1.35;
 }

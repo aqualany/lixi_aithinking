@@ -134,6 +134,14 @@ export interface ExperimentDetailProps {
   backLabel?: string;
 }
 
+/** One entry in the site-wide article directory (bottom of article pages). */
+export interface ArticleDirectoryItem {
+  key: string;
+  title: string;
+  to: string;
+  params?: Record<string, string>;
+}
+
 export interface ResumeProps {
   title: string;
   summary: string;

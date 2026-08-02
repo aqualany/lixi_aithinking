@@ -9,7 +9,7 @@ import type { ExperimentDetailProps, ArticleDirectoryItem } from "@/lib/cms/type
 export function ExperimentArticle({ data, directory, currentKey }: { data: ExperimentDetailProps; directory?: ArticleDirectoryItem[]; currentKey?: string }) {
   const d = data;
   const sections = d.sections || [];
-  const meta = [d.num, d.date, d.category].filter(Boolean).join(' · ');
+  const meta = [d.num, d.date].filter(Boolean).join(' · ');
 
   return (
     <section className="border-t border-border">
@@ -20,6 +20,11 @@ export function ExperimentArticle({ data, directory, currentKey }: { data: Exper
         <h1 className="mt-6 zh-title font-serif text-[36px] leading-[1.35] tracking-[0.02em] text-foreground sm:text-[42px]">
           {d.title}
         </h1>
+        {d.category && (
+          <p className="mt-4 font-body text-[17px] leading-[1.7] tracking-[0.02em] text-muted-foreground">
+            {d.category}
+          </p>
+        )}
 
         {/* Body — rich HTML preferred, markdown fallback, with TOC sidebar */}
         {(d.bodyHtml || d.bodyMd) && (

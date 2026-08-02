@@ -11,10 +11,7 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
   );
   return (
     <>
-      <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-        {data.typeLabelMeta ? data.typeLabelMeta : ""}
-      </p>
-      <div className="mt-6">
+      <div>
         {linkTitle ? (
           <Link to="/research" className="group inline-block">
             <span className="block group-hover:underline underline-offset-[8px] decoration-[0.5px]">
@@ -23,6 +20,11 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
           </Link>
         ) : Title}
       </div>
+      {data.typeLabelMeta && (
+        <p className="mt-4 font-body text-[17px] leading-[1.7] tracking-[0.02em] text-muted-foreground">
+          {data.typeLabelMeta}
+        </p>
+      )}
       <div className="mt-6 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[12px] tracking-[0.12em] text-muted-foreground">
         <span>{data.authorName}</span>
         <span aria-hidden>·</span>

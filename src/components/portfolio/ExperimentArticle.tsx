@@ -20,6 +20,11 @@ export function ExperimentArticle({ data, directory, currentKey }: { data: Exper
         <h1 className="mt-6 zh-title font-serif text-[36px] leading-[1.35] tracking-[0.02em] text-foreground sm:text-[42px]">
           {d.title}
         </h1>
+        {d.subtitle && (
+          <p className="mt-4 font-body text-[17px] leading-[1.7] tracking-[0.02em] text-muted-foreground">
+            {d.subtitle}
+          </p>
+        )}
 
         {/* Body — rich HTML preferred, markdown fallback, with TOC sidebar */}
         {(d.bodyHtml || d.bodyMd) && (

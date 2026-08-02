@@ -23,6 +23,11 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
           </Link>
         ) : Title}
       </div>
+      {data.subtitle && (
+        <p className="mt-4 font-body text-[17px] leading-[1.7] tracking-[0.02em] text-muted-foreground">
+          {data.subtitle}
+        </p>
+      )}
       <div className="mt-6 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[12px] tracking-[0.12em] text-muted-foreground">
         <span>{data.authorName}</span>
         <span aria-hidden>·</span>

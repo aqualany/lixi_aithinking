@@ -183,6 +183,7 @@ export function toResearchFullProps(
     : bodyMd;
   return {
     title: post.title,
+    subtitle: post.subtitle ?? '',
     authorName,
     date: formatChineseDate(post.published_at),
     wordCount: extra.word_count ?? 0,
@@ -194,7 +195,7 @@ export function toResearchFullProps(
     bodyHtml: bodyHtml || undefined,
     previewBodyMd,
     previewBodyHtml: bodyHtml || undefined,
-    typeLabelMeta: post.subtitle || '',
+    typeLabelMeta: post.tag ?? '',
   };
 }
 
@@ -209,7 +210,7 @@ export function toExperimentCardData(posts: PostRow[]): ExperimentCardData[] {
         slug: p.slug,
         num: extra.num ?? (p as any).display_number ?? '',
         date: formatExperimentDate(p.published_at),
-        category: p.subtitle,
+        category: p.tag ?? '',
         title: p.title,
         keyInsight: p.summary,
       };
@@ -230,13 +231,14 @@ export function toExperimentDetailProps(post: PostRow): ExperimentDetailProps {
   return {
     num: extra.num ?? (post as any).display_number ?? '',
     date: formatExperimentDate(post.published_at),
-    category: post.subtitle,
+    category: post.tag ?? '',
+    subtitle: post.subtitle ?? '',
     title: post.title,
     summary: post.summary,
     bodyMd,
     bodyHtml: bodyHtml || undefined,
     sections,
-    categoryLabel: post.subtitle,
+    categoryLabel: post.tag ?? '',
     backLabel: undefined,
   };
 }

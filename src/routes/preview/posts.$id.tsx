@@ -76,18 +76,20 @@ function PreviewPage() {
       props = {
         num: draft.num ?? '',
         date: formatExperimentDate(draft.publishedAt ?? null),
-        category: draft.subtitle ?? '',
+        category: draft.tag ?? '',
+        subtitle: draft.subtitle ?? '',
         title: draft.title ?? '',
         summary: draft.summary ?? '',
         bodyHtml: draft.bodyHtml ?? '',
         bodyMd: '',
         sections: extractHeadings(draft.bodyHtml ?? '').map((s) => ({ id: s.anchor, heading: s.title })),
-        categoryLabel: draft.subtitle ?? '',
+        categoryLabel: draft.tag ?? '',
         backLabel: '← 返回',
       };
     } else {
       props = {
         title: draft.title ?? '',
+        subtitle: draft.subtitle ?? '',
         authorName,
         date: formatChineseDate(draft.publishedAt ?? null),
         wordCount: draft.wordCount ?? 0,
@@ -95,7 +97,7 @@ function PreviewPage() {
         sections: extractHeadings(draft.bodyHtml ?? '').map((s) => ({ id: s.anchor, heading: s.title })),
         bodyHtml: draft.bodyHtml ?? '',
         bodyMd: '',
-        typeLabelMeta: draft.subtitle ?? '',
+        typeLabelMeta: draft.tag ?? '',
       };
     }
   } else if (dbData) {

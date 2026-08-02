@@ -53,7 +53,7 @@ function ExperimentsListPage() {
               return (
                 <tr key={p.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50/50">
                   <td className="px-5 py-4 text-stone-800 font-medium">{p.title}</td>
-                  <td className="px-5 py-4 text-xs text-stone-500">{p.subtitle || extra.category || '—'}</td>
+                  <td className="px-5 py-4 text-xs text-stone-500">{p.tag || extra.category || '—'}</td>
                   <td className="px-5 py-4 text-xs text-stone-400">{extra.num || p.display_number || '—'}</td>
                   <td className="px-5 py-4">
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${

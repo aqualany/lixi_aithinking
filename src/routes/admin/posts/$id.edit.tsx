@@ -21,7 +21,7 @@ function PostEditPage() {
   const [currentId, setCurrentId] = useState<string>(id);
   const [types, setTypes] = useState<any[]>([]);
   const [form, setForm] = useState<any>({
-    title: '', slug: '', subtitle: '', summary: '', body_md: '',
+    title: '', slug: '', tag: '', subtitle: '', summary: '', body_md: '',
     status: 'published', sort_order: 0, extra: '{}', content_type_id: '',
     published_at: '', word_count: '',
   });
@@ -61,7 +61,7 @@ function PostEditPage() {
           if (data) {
             const extra = typeof data.extra === 'object' ? data.extra : {};
             setForm({
-              title: data.title, slug: data.slug, subtitle: data.subtitle ?? '',
+              title: data.title, slug: data.slug, tag: data.tag ?? '', subtitle: data.subtitle ?? '',
               summary: data.summary ?? '', body_md: data.body_md ?? '',
               status: data.status, sort_order: data.sort_order, extra: JSON.stringify(extra, null, 2),
               content_type_id: data.content_type_id, published_at: data.published_at?.slice(0, 10) || '',
@@ -117,6 +117,7 @@ function PostEditPage() {
       content_type_id: form.content_type_id,
       slug: form.slug || generateSlug(form.title),
       title: form.title,
+      tag: form.tag || '',
       subtitle: form.subtitle || '',
       summary: form.summary || '',
       body_md: form.body_md || '',
@@ -167,6 +168,7 @@ function PostEditPage() {
     const draft = {
       contentTypeSlug: isExperiment ? 'experiment' : 'research',
       title: form.title,
+      tag: form.tag || '',
       subtitle: form.subtitle || '',
       summary: form.summary || '',
       bodyHtml: bodyHtmlNorm,
@@ -280,6 +282,17 @@ function PostEditPage() {
                 <label className="block text-xs text-stone-400 mb-1">
                   文章标签
                   <span className="ml-1 text-[10px] text-stone-300">自由填写，显示在标题左上角</span>
+                </label>
+                <input
+                  value={form.tag || ''}
+                  onChange={e => { markDirty(); setForm({ ...form, tag: e.target.value }); }}
+                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-stone-400 mb-1">
+                  副标题
+                  <span className="ml-1 text-[10px] text-stone-300">显示在主标题下方</span>
                 </label>
                 <input
                   value={form.subtitle || ''}

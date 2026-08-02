@@ -13,6 +13,8 @@ interface Phase71Fields {
   seo_title?: string;
   media_category?: string;
   display_number?: string;
+  /** 文章标签（原 subtitle 列，20260802 迁移后改名） */
+  tag?: string;
 }
 
 // Extended DB row types with Phase 7.1 migration fields
@@ -85,6 +87,8 @@ export interface ResearchSection {
 
 export interface ResearchFullProps {
   title: string;
+  /** 副标题（posts.subtitle，独立于文章标签 typeLabelMeta） */
+  subtitle?: string;
   authorName: string;
   date: string;
   wordCount: number;
@@ -97,7 +101,7 @@ export interface ResearchFullProps {
   previewBodyMd?: string;
   /** Full HTML for homepage preview (fade-mask handles truncation) */
   previewBodyHtml?: string;
-  /** From content_types — e.g. "研究 · 论文" */
+  /** 文章标签（原 posts.subtitle，现 posts.tag） */
   typeLabelMeta?: string;
   categoryLabelMeta?: string;
 }
@@ -121,7 +125,10 @@ export interface ExperimentsListProps {
 export interface ExperimentDetailProps {
   num: string;
   date: string;
+  /** 文章标签（原 posts.subtitle，现 posts.tag） */
   category: string;
+  /** 副标题（posts.subtitle，独立于文章标签 category） */
+  subtitle?: string;
   title: string;
   summary: string;
   bodyMd: string;

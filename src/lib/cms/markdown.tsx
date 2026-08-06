@@ -2,13 +2,59 @@
 // Phase 3: Data access layer
 // Renders Markdown (body_md) or rich HTML (extra.body_html) into .prose-article CSS classes
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import { sanitizeHtml } from './rich-html';
+
+// Long-image preview: when an image is much taller than wide and taller than
+// the container, wrap it in a fixed-height scrollable frame so it doesn't
+// stretch the article page. Normal images are left untouched.
+const LONG_IMG_MIN_ASPECT = 2;      // height / width ratio to be considered "long"
+const LONG_IMG_MAX_HEIGHT = 500;    // px — scroll frame height
+
+function wrapLongImages(container: HTMLElement) {
+  container.querySelectorAll<HTMLImageElement>('img').forEach((img) => {
+    if (img.dataset.longImg) return;
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!(w > 0 && h > 0)) return;
+    const isLong = h / w >= LONG_IMG_MIN_ASPECT && h > LONG_IMG_MAX_HEIGHT;
+
+    // Framed images (new editor): the frame is already the container; mark it
+    // long so it caps its height and scrolls. No wrapping needed.
+    const frame = img.closest<HTMLElement>('.img-frame');
+    if (frame) {
+      if (isLong) frame.classList.add('is-long');
+      img.dataset.longImg = '1';
+      return;
+    }
+
+    if (!isLong) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'article-img-scroll';
+
+    // If the image sits alone in a <p> (common in TipTap output), replace the
+    // <p> with the wrapper to avoid invalid <div> inside <p> nesting.
+    const parent = img.parentElement;
+    if (
+      parent &&
+      parent.tagName === 'P' &&
+      parent.querySelectorAll('img').length === 1 &&
+      parent.textContent?.trim() === ''
+    ) {
+      parent.replaceWith(wrapper);
+    } else {
+      parent?.insertBefore(wrapper, img);
+    }
+    wrapper.appendChild(img);
+    img.dataset.longImg = '1';
+  });
+}
 
 const customComponents: Components = {
   // Map ### heading {#anchor} → <h3 id="anchor" className="scroll-mt-24">
@@ -70,6 +116,25 @@ export function ArticleBody({ html, markdown }: { html?: string | null; markdown
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [slides, setSlides] = useState<{ src: string }[]>([]);
+
+  // Wrap tall images in a scrollable frame once their intrinsic size is known.
+  // Runs after render; re-wraps whenever the body content changes.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const wrap = () => wrapLongImages(container);
+    const imgs = Array.from(container.querySelectorAll('img'));
+    imgs.forEach((img) => {
+      if (img.complete) wrap();
+      else img.addEventListener('load', wrap, { once: true });
+    });
+    // Fallback: cached / never-firing loads still get checked.
+    const t = window.setTimeout(wrap, 400);
+    return () => {
+      window.clearTimeout(t);
+      imgs.forEach((img) => img.removeEventListener('load', wrap));
+    };
+  }, [html, markdown]);
 
   // Click on any image inside the article → open lightbox gallery at that image.
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {

@@ -241,6 +241,61 @@ html {
   border: 1px solid var(--border);
   cursor: zoom-in;
 }
+
+/* Long images: fixed-height scrollable frame, keeps the article page compact */
+.article-img-scroll {
+  max-height: 500px;
+  overflow-y: auto;
+  margin: 2em 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  -webkit-overflow-scrolling: touch;
+}
+.article-img-scroll img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto !important;
+  border: none;
+  cursor: zoom-in;
+}
+
+/* Display frame for images (ResizableImage / ImagePair) — frontend */
+.prose-article .img-frame {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: auto;
+  margin: 2em auto;
+  background: var(--card);
+  -webkit-overflow-scrolling: touch;
+}
+.prose-article .img-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: none;
+  cursor: zoom-in;
+}
+.prose-article .img-frame.is-long { max-height: 500px; }
+
+/* Side-by-side half images (layout:"half") — frontend */
+.prose-article .img-frame[data-layout="half"] {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 48%;
+  margin: 2em 1%;
+}
+@media (max-width: 640px) {
+  .prose-article .img-frame[data-layout="half"] {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 2em 0;
+  }
+}
 .prose-article strong {
   font-weight: 600;
 }
@@ -334,6 +389,66 @@ html {
   margin: 1.5em auto;
   border: 1px solid var(--border);
 }
+
+/* Custom image nodes: resizable display frame (ResizableImage / ImagePair) */
+.rich-editor .ProseMirror .img-frame {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  margin: 0.5em 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: auto;
+  background: var(--card);
+}
+.rich-editor .ProseMirror .img-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border: none;
+}
+.rich-editor .ProseMirror .img-frame.is-long { max-height: 500px; }
+.rich-editor .ProseMirror .img-frame-resize {
+  position: absolute;
+  background: var(--foreground);
+  border: 2px solid var(--card);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  border-radius: 6px;
+  opacity: 0.35;
+  z-index: 1;
+  transition: opacity 0.15s;
+}
+.rich-editor .ProseMirror .img-frame-resize-w {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 48px;
+  cursor: col-resize;
+}
+.rich-editor .ProseMirror .img-frame-resize-h {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 14px;
+  cursor: row-resize;
+}
+.rich-editor .ProseMirror .img-frame:hover .img-frame-resize,
+.rich-editor .ProseMirror .img-frame.is-selected .img-frame-resize { opacity: 0.95; }
+
+/* Side-by-side half images (layout:"half").
+   TipTap wraps each React NodeView in a div.react-renderer, which is the
+   actual block sibling — so make THOSE inline-block 48%, and let the frame
+   fill its half. */
+.rich-editor .ProseMirror div.react-renderer:has(.image-half) {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 48%;
+  margin: 0 1%;
+}
+.rich-editor .ProseMirror .image-half .img-frame { width: 100%; }
 .rich-editor .ProseMirror a {
   text-decoration: underline;
   text-underline-offset: 4px;

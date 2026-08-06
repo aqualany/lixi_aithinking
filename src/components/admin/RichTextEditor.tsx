@@ -3,9 +3,9 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { ResizableImage } from "@/components/admin/article-image-extensions";
 import { useEffect, useReducer, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -23,6 +23,7 @@ import {
   Undo2,
   Redo2,
   Pilcrow,
+  Columns2,
 } from "lucide-react";
 
 interface RichTextEditorProps {
@@ -40,7 +41,7 @@ export function RichTextEditor({ value, onChange, placeholder = "开始撰写…
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
       }),
-      Image.configure({ allowBase64: false }),
+      ResizableImage.configure({ allowBase64: false }),
       Link.configure({ openOnClick: false, autolink: true }),
       Placeholder.configure({ placeholder }),
     ],
@@ -55,6 +56,12 @@ export function RichTextEditor({ value, onChange, placeholder = "开始撰写…
     onSelectionUpdate: () => force(),
     onTransaction: () => force(),
   });
+
+  // TEMP: expose editor on window for runtime getJSON/getHTML verification
+  useEffect(() => {
+    if (editor) (window as any).EDITOR = editor;
+    else delete (window as any).EDITOR;
+  }, [editor]);
 
   // External value sync (e.g. after async post load)
   useEffect(() => {
@@ -78,6 +85,8 @@ export function RichTextEditor({ value, onChange, placeholder = "开始撰写…
   const [files, setFiles] = useState<any[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pairMode, setPairMode] = useState(false);
+  const [pairSel, setPairSel] = useState<string[]>([]);
 
   const loadMedia = async () => {
     setLoadingMedia(true);
@@ -119,6 +128,39 @@ export function RichTextEditor({ value, onChange, placeholder = "开始撰写…
   const insertImage = (src: string) => {
     run((chain: any) => chain.setImage({ src }));
     setShowMedia(false);
+  };
+
+  const togglePairMode = () => {
+    if (!showMedia && files.length === 0) loadMedia();
+    setPairMode(!pairMode);
+    setPairSel([]);
+    setShowMedia(true);
+  };
+
+  const handleMediaClick = (f: any) => {
+    if (pairMode) {
+      const next = pairSel.includes(f.public_url) ? pairSel : [...pairSel, f.public_url];
+      if (next.length === 2) {
+        // Plan B: insert TWO independent image nodes (not a container). They
+        // share a groupId + layout:"half" so they render side by side.
+        const groupId = `g${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
+        // Single insertContent with an array — chaining two insertContent calls
+        // only applies one of them, which broke the pair insertion.
+        run((chain: any) =>
+          chain.insertContent([
+            { type: "image", attrs: { src: next[0], alt: "", layout: "half", groupId } },
+            { type: "image", attrs: { src: next[1], alt: "", layout: "half", groupId } },
+          ])
+        );
+        setPairMode(false);
+        setPairSel([]);
+        setShowMedia(false);
+      } else {
+        setPairSel(next);
+      }
+    } else {
+      insertImage(f.public_url);
+    }
   };
 
   const setLink = () => {
@@ -182,6 +224,9 @@ export function RichTextEditor({ value, onChange, placeholder = "开始撰写…
         <button type="button" className={btn(showMedia)} title="插入图片" onClick={toggleMedia}>
           <ImagePlus className="h-4 w-4" />
         </button>
+        <button type="button" className={btn(pairMode)} title="两图并排" onClick={togglePairMode}>
+          <Columns2 className="h-4 w-4" />
+        </button>
         <span className="mx-1 h-5 w-px bg-stone-200" />
         <button type="button" className={btn(false)} title="撤销" onClick={() => run((c: any) => c.undo())}>
           <Undo2 className="h-4 w-4" />
@@ -195,28 +240,43 @@ export function RichTextEditor({ value, onChange, placeholder = "开始撰写…
       {showMedia && (
         <div className="border-b border-stone-200 bg-white px-3 py-3">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs text-stone-500">从媒体库插入图片</p>
-            <label className="cursor-pointer rounded border border-dashed border-stone-300 px-2 py-1 text-[11px] text-stone-500 hover:border-stone-400">
-              {uploading ? "上传中…" : "+ 上传新图片"}
-              <input type="file" accept="image/*" onChange={uploadImage} className="hidden" disabled={uploading} />
-            </label>
+            <p className="text-xs text-stone-500">{pairMode ? "并排模式" : "从媒体库插入图片"}</p>
+            <div className="flex items-center gap-2">
+              {pairMode && (
+                <span className="text-[11px] text-stone-400">已选 {pairSel.length}/2</span>
+              )}
+              <label className="cursor-pointer rounded border border-dashed border-stone-300 px-2 py-1 text-[11px] text-stone-500 hover:border-stone-400">
+                {uploading ? "上传中…" : "+ 上传新图片"}
+                <input type="file" accept="image/*" onChange={uploadImage} className="hidden" disabled={uploading} />
+              </label>
+            </div>
           </div>
+          {pairMode && (
+            <p className="mb-2 text-[11px] text-stone-400">点击两张图片横向排列；再点一次取消已选</p>
+          )}
           {loadingMedia ? (
             <p className="text-xs text-stone-400">加载中…</p>
           ) : files.length === 0 ? (
             <p className="text-xs text-stone-400">暂无媒体文件</p>
           ) : (
             <div className="grid grid-cols-8 gap-2 max-h-44 overflow-y-auto">
-              {files.map((f: any) => (
-                <button key={f.id} type="button"
-                  onClick={() => insertImage(f.public_url)}
-                  className="group relative aspect-square overflow-hidden rounded border border-stone-100 hover:border-stone-400">
-                  <img src={f.public_url} alt={f.alt} className="h-full w-full object-cover" />
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-[10px] text-white opacity-0 transition-opacity group-hover:bg-black/30 group-hover:opacity-100">
-                    插入
-                  </span>
-                </button>
-              ))}
+              {files.map((f: any) => {
+                const selIdx = pairMode ? pairSel.indexOf(f.public_url) : -1;
+                return (
+                  <button key={f.id} type="button"
+                    onClick={() => handleMediaClick(f)}
+                    className={`group relative aspect-square overflow-hidden rounded border hover:border-stone-400 ${selIdx >= 0 ? "border-stone-500" : "border-stone-100"}`}>
+                    <img src={f.public_url} alt={f.alt} className="h-full w-full object-cover" />
+                    <span className={`absolute inset-0 flex items-center justify-center text-[10px] text-white transition-opacity ${
+                      selIdx >= 0
+                        ? "bg-black/40 opacity-100"
+                        : "bg-black/0 opacity-0 group-hover:bg-black/30 group-hover:opacity-100"
+                    }`}>
+                      {pairMode ? (selIdx >= 0 ? `${selIdx + 1}` : "选") : "插入"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

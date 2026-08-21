@@ -20,7 +20,7 @@
 - `site_title` text
 - `site_description` text
 - `seo_keywords` text[]
-- `author_name` text（聂灵晞）
+- `author_name` text（聂蓝玉）
 - `bio_lines` text[]（Hero 简介行）
 - `tags` text[]（INFJ / 写作者 等）
 - `avatar_media_id` uuid FK → media

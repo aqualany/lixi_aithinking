@@ -166,9 +166,9 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   head: (headContext) => {
     const s = (headContext as any)?.context?.siteSettings ?? null;
     const faviconUrl = (s as any)?._faviconUrl || (s as any)?.faviconUrl || null;
-    const title = s?.site_title ?? "聂灵晞 · 个人主页";
+    const title = s?.site_title ?? "聂蓝玉 · 个人主页";
     const description = s?.site_description ?? "";
-    const author = s?.author_name ?? "聂灵晞";
+    const author = s?.author_name ?? "聂蓝玉";
 
     return {
       meta: [

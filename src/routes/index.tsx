@@ -16,12 +16,12 @@ export const Route = createFileRoute("/")({
     const seo = (ctx as any)?.context?.pageSeoMap?.["home"] ?? null;
     return {
       meta: [
-        { title: seo?.title ?? "聂灵晞 · 个人主页" },
+        { title: seo?.title ?? "聂蓝玉 · 个人主页" },
         {
           name: "description",
           content: seo?.description ?? "",
         },
-        { property: "og:title", content: seo?.title ?? "聂灵晞 · 个人主页" },
+        { property: "og:title", content: seo?.title ?? "聂蓝玉 · 个人主页" },
         {
           property: "og:description",
           content: seo?.description ?? "",

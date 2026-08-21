@@ -26,6 +26,27 @@ export function markdownToHtml(md: string): string {
   }
 }
 
+/**
+ * Truncate rich-text HTML so it ends at the end of the block containing
+ * `targetText` (paragraph / heading / blockquote / list item). Returns a
+ * balanced HTML prefix that renders cleanly. Falls back to the full string
+ * when the target isn't found or no block boundary can be located.
+ */
+export function truncateHtmlByText(html: string, targetText: string): string {
+  if (!html || !targetText) return html;
+  const idx = html.indexOf(targetText);
+  if (idx === -1) return html;
+  const BLOCK_CLOSERS = ['</p>', '</h2>', '</h3>', '</h4>', '</blockquote>', '</li>', '</ol>', '</ul>', '</div>'];
+  let end = -1;
+  for (const tag of BLOCK_CLOSERS) {
+    const i = html.indexOf(tag, idx);
+    if (i !== -1 && (end === -1 || i < end)) end = i;
+  }
+  if (end === -1) return html;
+  const matched = BLOCK_CLOSERS.find((t) => html.startsWith(t, end));
+  return html.slice(0, end + (matched?.length ?? 0));
+}
+
 const HEADING_RE = /<h([123])([^>]*)>([\s\S]*?)<\/h\1>/gi;
 
 function headingText(inner: string): string {

@@ -98,9 +98,9 @@ export interface ResearchFullProps {
   bodyMd: string;
   /** Rich text HTML body (new editor). Preferred over bodyMd. */
   bodyHtml?: string;
-  /** Truncated ~50% body for homepage preview */
+  /** Truncated ~62% markdown for homepage preview (fallback when no HTML) */
   previewBodyMd?: string;
-  /** Full HTML for homepage preview (fade-mask handles truncation) */
+  /** 截断后的富文本 HTML 首页预览（锚定在渐隐起始段，样式与详情页一致） */
   previewBodyHtml?: string;
   /** 文章标签（原 posts.subtitle，现 posts.tag） */
   typeLabelMeta?: string;

@@ -24,7 +24,7 @@ import type {
   PostDisplayProps,
   ContactLink,
 } from './types';
-import { extractHeadings } from './rich-html';
+import { extractHeadings, truncateHtmlByText } from './rich-html';
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -169,8 +169,18 @@ export function toResearchFullProps(
   const extra = (post.extra ?? {}) as ResearchExtra;
   const bodyMd = post.body_md;
   const bodyHtml = (extra as any).body_html ?? '';
-  // Compute ~62% truncated preview at nearest paragraph break (markdown only),
-  // so the homepage preview extends to the closing quote paragraph then fades.
+  // 首页预览（富文本）：截断到"当模型开始…"渐隐起始段。该段原文只存在于
+  // 旧 markdown 草稿里，实时富文本版中的同义段是 sec-1 的加粗核心段
+  // "在大模型的源头上…"，故以此作为截断锚点，保证预览与详情页样式一致。
+  const PREVIEW_ANCHORS = ['当模型开始用自己生成的数据训练下一代模型时', '在大模型的源头上'];
+  const previewBodyHtml = (() => {
+    if (!bodyHtml) return undefined;
+    for (const anchor of PREVIEW_ANCHORS) {
+      if (bodyHtml.includes(anchor)) return truncateHtmlByText(bodyHtml, anchor);
+    }
+    return bodyHtml; // 找不到锚点则不截断，仅靠渐隐遮罩收尾
+  })();
+  // markdown 版预览：按 ~62% 截断（无富文本文章的兜底）
   const previewLen = Math.floor(bodyMd.length * 0.62);
   const previewBodyMd = bodyMd.length > 200
     ? (() => {
@@ -195,7 +205,7 @@ export function toResearchFullProps(
     bodyMd,
     bodyHtml: bodyHtml || undefined,
     previewBodyMd,
-    previewBodyHtml: bodyHtml || undefined,
+    previewBodyHtml: previewBodyHtml,
     typeLabelMeta: post.tag ?? '',
   };
 }

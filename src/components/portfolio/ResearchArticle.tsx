@@ -68,8 +68,10 @@ function Sidebar({ data, activeOnly }: { data: ResearchFullProps; activeOnly?: b
 
 export function ResearchPreview({ data, directory }: { data?: ResearchFullProps; directory?: ArticleDirectoryItem[] }) {
   if (!data) return null;
-  // 首页预览：优先用截断后的 markdown（延伸到引用段落），无 markdown 时才退回完整富文本 HTML
-  const mdPreview = data.previewBodyMd || data.bodyMd;
+  // 首页预览：优先渲染截断后的富文本 HTML（与详情页样式完全一致），
+  // 无富文本时才退回 markdown 截断。
+  const previewHtml = data.previewBodyHtml || data.bodyHtml;
+  const previewMd = data.previewBodyMd || data.bodyMd;
   return (
     <section id="research"
       className="scroll-mt-24 border-t border-border bg-background">
@@ -80,8 +82,8 @@ export function ResearchPreview({ data, directory }: { data?: ResearchFullProps;
             <div className="relative">
               <article className="prose-article fade-preview">
                 <ArticleBody
-                  html={mdPreview ? undefined : data.bodyHtml}
-                  markdown={mdPreview || undefined}
+                  html={previewHtml || undefined}
+                  markdown={!previewHtml ? (previewMd || undefined) : undefined}
                 />
               </article>
             </div>

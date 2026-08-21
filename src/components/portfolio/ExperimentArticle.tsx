@@ -13,7 +13,9 @@ export function ExperimentArticle({ data, directory, currentKey }: { data: Exper
 
   return (
     <section className="border-t border-border">
-      <div className="mx-auto max-w-3xl px-6 py-16">
+      <div className="mx-auto max-w-5xl px-6 py-16">
+        {/* 220px = 正文右侧目录(180px) + 间距(40px)，让标题/副标题与正文同宽对齐 */}
+        <div className="md:pr-[220px]">
         <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
           {meta}
         </p>
@@ -25,6 +27,7 @@ export function ExperimentArticle({ data, directory, currentKey }: { data: Exper
             {d.subtitle}
           </p>
         )}
+        </div>
 
         {/* Body — rich HTML preferred, markdown fallback, with TOC sidebar */}
         {(d.bodyHtml || d.bodyMd) && (

@@ -27,7 +27,7 @@ function ResearchPage() {
     <div className="min-h-screen bg-background text-foreground">
       <FixedNav data={cmsData?.fixedNavProps ?? undefined} />
       <main className="pt-16">
-        <div className="mx-auto max-w-3xl px-6 pt-10">
+        <div className="mx-auto max-w-5xl px-6 pt-10">
           <Link
             to="/"
             hash="research"

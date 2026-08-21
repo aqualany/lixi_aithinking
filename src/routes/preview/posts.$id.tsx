@@ -109,7 +109,7 @@ function PreviewPage() {
     <div className="min-h-screen bg-background text-foreground">
       <FixedNav data={cmsData?.fixedNavProps ?? undefined} />
       <main className="pt-16">
-        <div className="mx-auto max-w-3xl px-6 pt-10">
+        <div className="mx-auto max-w-5xl px-6 pt-10">
           <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
             预览模式
           </span>

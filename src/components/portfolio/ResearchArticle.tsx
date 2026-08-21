@@ -10,7 +10,8 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
     </h2>
   );
   return (
-    <>
+    <div className="md:pr-[220px]">
+      {/* 220px = 正文右侧目录(180px) + 间距(40px)，让标题/副标题与正文同宽对齐 */}
       <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
         {data.typeLabelMeta ? data.typeLabelMeta : ""}
       </p>
@@ -35,7 +36,7 @@ function Header({ data, linkTitle = false }: { data: ResearchFullProps; linkTitl
         <span aria-hidden>·</span>
         <span>约 {data.wordCount.toLocaleString()} 字</span>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -72,7 +73,7 @@ export function ResearchPreview({ data, directory }: { data?: ResearchFullProps;
   return (
     <section id="research"
       className="scroll-mt-24 border-t border-border bg-background">
-      <div className="mx-auto max-w-3xl px-6 py-20">
+      <div className="mx-auto max-w-5xl px-6 py-20">
         <Header data={data} linkTitle />
         <div className="mt-14 md:grid md:grid-cols-[1fr_180px] md:gap-x-10">
           <div>
@@ -104,7 +105,7 @@ export function ResearchFull({ data, directory, currentKey }: { data?: ResearchF
   if (!data) return null;
   return (
     <section className="border-t border-border bg-background">
-      <div className="mx-auto max-w-3xl px-6 py-20">
+      <div className="mx-auto max-w-5xl px-6 py-20">
         <Header data={data} />
         <div className="mt-14 md:grid md:grid-cols-[1fr_180px] md:gap-x-10">
           <article className="prose-article">

@@ -33,6 +33,24 @@ html {
   mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
 }
 
+/* 首页文章预览：最后 ~4-5 行（行高 1.9 × 17px ≈ 10rem）先变灰再淡出到页面背景 */
+.fade-preview {
+  position: relative;
+}
+.fade-preview::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10rem;
+  background: linear-gradient(to bottom,
+    transparent,
+    color-mix(in oklab, var(--foreground) 10%, transparent) 45%,
+    var(--background) 100%);
+  pointer-events: none;
+}
+
 /*
  * Design system definition.
  *

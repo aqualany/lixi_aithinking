@@ -20,8 +20,6 @@ function ResumeEditor() {
           status: data.status, sort_order: data.sort_order, content_type_id: data.content_type_id,
           experience: extra.experience || [],
           education: extra.education || [],
-          writings: extra.writings || [],
-          skills: extra.skills || [],
         });
       } else {
         initNew();
@@ -32,21 +30,44 @@ function ResumeEditor() {
   const initNew = async () => {
     const { data: ct } = await (supabase.from('content_types') as any).select('id').eq('slug', 'resume').single();
     setForm({ id: null, title: '', summary: '', slug: 'main', status: 'published', sort_order: 1,
-      content_type_id: ct?.id || '', experience: [], education: [], writings: [], skills: [] });
+      content_type_id: ct?.id || '', experience: [], education: [] });
   };
 
   const addItem = (field: string, empty: any) => setForm({...form, [field]: [...(form[field] || []), { ...empty }]});
-  const updateItem = (field: string, i: number, key: string, val: string) => {
+  const updateItem = (field: string, i: number, key: string, val: any) => {
     const arr = [...form[field]]; arr[i] = { ...arr[i], [key]: val }; setForm({...form, [field]: arr});
   };
   const removeItem = (field: string, i: number) => setForm({...form, [field]: form[field].filter((_: any, j: number) => j !== i)});
+
+  // PDF 附件上传到 media 存储桶（复用 admin/media.tsx 的上传模式）
+  const uploadAttachment = async (i: number, file: File) => {
+    try {
+      const path = `uploads/${Date.now()}.pdf`;
+      const { error: storageErr } = await (supabase.storage.from('media') as any).upload(path, file);
+      if (storageErr) throw new Error(storageErr.message);
+      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
+      const name = file.name.replace(/\.pdf$/i, '');
+      updateItem('experience', i, 'attachment', { name, url: publicUrl });
+      setMsg("附件已上传，请确认文件名后保存");
+    } catch (err: any) {
+      setMsg("上传失败: " + err.message);
+    }
+  };
+
+  const removeAttachment = (i: number) => {
+    const arr = [...form.experience];
+    const item = { ...arr[i] };
+    delete item.attachment;
+    arr[i] = item;
+    setForm({...form, experience: arr});
+  };
 
   const save = async () => {
     setSaving(true); setMsg("");
     const payload: any = {
       content_type_id: form.content_type_id, slug: form.slug, title: form.title,
       summary: form.summary, status: form.status, sort_order: Number(form.sort_order),
-      extra: { experience: form.experience, education: form.education, writings: form.writings, skills: form.skills },
+      extra: { experience: form.experience, education: form.education },
     };
     if (form.id) payload.id = form.id;
     const { error }: any = await (supabase.from('posts') as any).upsert(payload);
@@ -93,7 +114,24 @@ function ResumeEditor() {
                 <input value={item.role} onChange={e => updateItem('experience', i, 'role', e.target.value)} placeholder="职位" className="col-span-2 rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
                 <input value={item.org} onChange={e => updateItem('experience', i, 'org', e.target.value)} placeholder="机构" className="rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
               </div>
-              <textarea value={item.detail} onChange={e => updateItem('experience', i, 'detail', e.target.value)} rows={2} placeholder="描述" className="w-full rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
+              <textarea value={item.detail} onChange={e => updateItem('experience', i, 'detail', e.target.value)} rows={4} placeholder="描述（空行分段）" className="w-full rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
+              {/* PDF 附件上传：改名 + 移除 */}
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <label className="cursor-pointer text-xs text-stone-500 hover:text-stone-700">
+                  {item.attachment ? '重新上传' : '+ 上传 PDF 附件'}
+                  <input type="file" accept="application/pdf" className="hidden" disabled={saving}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAttachment(i, f); e.target.value = ''; }} />
+                </label>
+                {item.attachment && (
+                  <>
+                    <input value={item.attachment.name}
+                      onChange={e => updateItem('experience', i, 'attachment', { ...item.attachment, name: e.target.value })}
+                      placeholder="展示文件名" className="rounded border border-stone-200 px-2 py-1 text-xs focus:outline-none" />
+                    <span className="text-xs text-stone-300">.pdf</span>
+                    <button onClick={() => removeAttachment(i)} className="text-xs text-stone-400 hover:text-red-500">移除附件</button>
+                  </>
+                )}
+              </div>
               <button onClick={() => removeItem('experience', i)} className="mt-1 text-xs text-stone-400 hover:text-red-500">删除</button>
             </div>
           ))}
@@ -110,45 +148,13 @@ function ResumeEditor() {
                 <input value={item.role} onChange={e => updateItem('education', i, 'role', e.target.value)} placeholder="学位" className="col-span-2 rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
                 <input value={item.org} onChange={e => updateItem('education', i, 'org', e.target.value)} placeholder="学校" className="rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
               </div>
-              <textarea value={item.detail} onChange={e => updateItem('education', i, 'detail', e.target.value)} rows={2} placeholder="描述" className="w-full rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
+              <textarea value={item.detail} onChange={e => updateItem('education', i, 'detail', e.target.value)} rows={4} placeholder="描述（空行分段）" className="w-full rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
               <button onClick={() => removeItem('education', i)} className="mt-1 text-xs text-stone-400 hover:text-red-500">删除</button>
             </div>
           ))}
           <button onClick={() => addItem('education', { year: '', role: '', org: '', detail: '' })} className="text-xs text-stone-500 hover:text-stone-700">+ 添加教育经历</button>
         </section>
 
-        {/* Writings */}
-        <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-medium text-stone-700 mb-4">写作</h2>
-          {form.writings.map((item: any, i: number) => (
-            <div key={i} className="mb-4 pb-4 border-b border-stone-100 last:border-0">
-              <div className="grid grid-cols-3 gap-3 mb-2">
-                <input value={item.year} onChange={e => updateItem('writings', i, 'year', e.target.value)} placeholder="年份" className="rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
-                <input value={item.title} onChange={e => updateItem('writings', i, 'title', e.target.value)} placeholder="标题" className="col-span-2 rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
-              </div>
-              <input value={item.venue} onChange={e => updateItem('writings', i, 'venue', e.target.value)} placeholder="发表地" className="w-full rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
-              <button onClick={() => removeItem('writings', i)} className="mt-1 text-xs text-stone-400 hover:text-red-500">删除</button>
-            </div>
-          ))}
-          <button onClick={() => addItem('writings', { year: '', title: '', venue: '' })} className="text-xs text-stone-500 hover:text-stone-700">+ 添加作品</button>
-        </section>
-
-        {/* Skills */}
-        <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-medium text-stone-700 mb-4">技能</h2>
-          <div className="space-y-2">
-            {form.skills.map((s: string, i: number) => (
-              <div key={i} className="flex items-center gap-2">
-                <input value={s} onChange={e => { const arr = [...form.skills]; arr[i] = e.target.value; setForm({...form, skills: arr}); }}
-                  className="flex-1 rounded border border-stone-200 px-3 py-1.5 text-sm focus:outline-none" />
-                <button onClick={() => setForm({...form, skills: form.skills.filter((_: any, j: number) => j !== i)})}
-                  className="text-xs text-stone-400 hover:text-red-500">✕</button>
-              </div>
-            ))}
-            <button onClick={() => setForm({...form, skills: [...form.skills, '']})}
-              className="text-xs text-stone-500 hover:text-stone-700">+ 添加技能</button>
-          </div>
-        </section>
       </div>
 
       <div className="mt-6 flex items-center gap-4">

@@ -169,15 +169,16 @@ export function toResearchFullProps(
   const extra = (post.extra ?? {}) as ResearchExtra;
   const bodyMd = post.body_md;
   const bodyHtml = (extra as any).body_html ?? '';
-  // Compute ~25% truncated preview at nearest paragraph break (markdown only)
-  const quarterLen = Math.floor(bodyMd.length / 4);
+  // Compute ~62% truncated preview at nearest paragraph break (markdown only),
+  // so the homepage preview extends to the closing quote paragraph then fades.
+  const previewLen = Math.floor(bodyMd.length * 0.62);
   const previewBodyMd = bodyMd.length > 200
     ? (() => {
-        const before = bodyMd.lastIndexOf('\n\n', quarterLen);
-        const after = bodyMd.indexOf('\n\n', quarterLen);
-        const cut = (before > quarterLen - 200 && before > 0) ? before
-                  : (after > 0 && after < quarterLen + 200) ? after
-                  : quarterLen;
+        const before = bodyMd.lastIndexOf('\n\n', previewLen);
+        const after = bodyMd.indexOf('\n\n', previewLen);
+        const cut = (before > previewLen - 200 && before > 0) ? before
+                  : (after > 0 && after < previewLen + 200) ? after
+                  : previewLen;
         return bodyMd.slice(0, Math.max(cut, 1));
       })()
     : bodyMd;
@@ -252,7 +253,5 @@ export function toResumeProps(post: PostRow): ResumeProps {
     summary: post.summary,
     experience: extra.experience ?? [],
     education: extra.education ?? [],
-    writings: extra.writings ?? [],
-    skills: extra.skills ?? [],
   };
 }

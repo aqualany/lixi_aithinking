@@ -1,18 +1,51 @@
-import type { ResumeProps } from "@/lib/cms/types";
+import type { ResumeProps, ResumeEntry } from "@/lib/cms/types";
 
-type Entry = {
-  year: string;
-  role: string;
-  org: string;
-  detail: string;
-};
+/** 把后台编辑框里的多段描述按段落渲染：\n\n 分段，段内 \n 换行。 */
+function Detail({ text }: { text: string }) {
+  const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  return (
+    <>
+      {paragraphs.map((p, i) => (
+        <p
+          key={i}
+          className="mt-3 font-serif text-[15.5px] leading-[1.9] tracking-[0.01em] text-foreground"
+        >
+          {p.split('\n').map((line, j) => (
+            <span key={j}>
+              {j > 0 && <br />}
+              {line}
+            </span>
+          ))}
+        </p>
+      ))}
+    </>
+  );
+}
 
-function CVList({ entries }: { entries: Entry[] }) {
+function AttachmentLink({ attachment }: { attachment: NonNullable<ResumeEntry['attachment']> }) {
+  const display = attachment.name.endsWith('.pdf') ? attachment.name : `${attachment.name}.pdf`;
+  return (
+    <a
+      href={attachment.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-4 inline-flex items-center gap-2 font-mono text-[12px] tracking-[0.08em] text-foreground underline underline-offset-4 decoration-[0.5px] transition-opacity hover:opacity-60"
+    >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6" />
+      </svg>
+      {display}
+    </a>
+  );
+}
+
+function CVList({ entries }: { entries: ResumeEntry[] }) {
   return (
     <ol className="space-y-8">
-      {entries.map((e) => (
+      {entries.map((e, idx) => (
         <li
-          key={e.year + e.role}
+          key={e.year + e.role + idx}
           className="grid gap-x-6 gap-y-2 border-b border-border pb-8 last:border-b-0 last:pb-0 md:grid-cols-[7rem_1fr]"
         >
           <p className="font-mono text-[12px] tracking-[0.12em] text-muted-foreground pt-1">
@@ -25,10 +58,8 @@ function CVList({ entries }: { entries: Entry[] }) {
             <p className="mt-1 font-sans text-[13px] tracking-[0.02em] text-muted-foreground">
               {e.org}
             </p>
-            <p
-              className="mt-3 font-serif text-[15.5px] leading-[1.9] tracking-[0.01em] text-foreground"
-              dangerouslySetInnerHTML={{ __html: e.detail }}
-            />
+            <Detail text={e.detail} />
+            {e.attachment && <AttachmentLink attachment={e.attachment} />}
           </div>
         </li>
       ))}
@@ -51,7 +82,7 @@ export function Resume({ data }: { data?: ResumeProps }) {
   // Item 8: No hardcoded fallback — render nothing if no data
   if (!data) return null;
 
-  const { title, summary, experience, education, writings, skills } = data;
+  const { title, summary, experience, education } = data;
 
   return (
     <section
@@ -59,10 +90,7 @@ export function Resume({ data }: { data?: ResumeProps }) {
       className="scroll-mt-24 border-t border-border bg-background"
     >
       <div className="mx-auto max-w-3xl px-6 py-24">
-        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-          简历 · 03
-        </p>
-        <h2 className="mt-6 zh-title font-serif text-[36px] leading-[1.35] tracking-[0.02em] text-foreground sm:text-[44px]">
+        <h2 className="zh-title font-serif text-[36px] leading-[1.35] tracking-[0.02em] text-foreground sm:text-[44px]">
           {title}
         </h2>
         <p className="mt-6 font-serif text-[16px] leading-[1.9] tracking-[0.01em] text-muted-foreground">
@@ -75,39 +103,6 @@ export function Resume({ data }: { data?: ResumeProps }) {
 
         <Section label="教育">
           <CVList entries={education} />
-        </Section>
-
-        <Section label="部分写作">
-          <ol className="space-y-5">
-            {writings.map((w) => (
-              <li
-                key={w.title}
-                className="grid gap-x-6 gap-y-1 md:grid-cols-[7rem_1fr]"
-              >
-                <p className="font-mono text-[12px] tracking-[0.12em] text-muted-foreground pt-1">
-                  {w.year}
-                </p>
-                <div>
-                  <p className="font-serif text-[16.5px] leading-[1.6] tracking-[0.02em] text-foreground">
-                    {w.title}
-                  </p>
-                  <p className="mt-1 font-sans text-[13px] text-muted-foreground">
-                    {w.venue}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Section>
-
-        <Section label="工作方法 / 技能">
-          <ul className="grid grid-cols-2 gap-x-6 gap-y-2 font-serif text-[15.5px] leading-[1.85] text-foreground sm:grid-cols-2">
-            {skills.map((s) => (
-              <li key={s} className="before:content-['—'] before:mr-2 before:text-muted-foreground">
-                {s}
-              </li>
-            ))}
-          </ul>
         </Section>
       </div>
     </section>

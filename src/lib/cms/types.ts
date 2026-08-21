@@ -36,24 +36,25 @@ export interface ExperimentExtra {
   screenshot_media_ids: string[];
 }
 
+export interface ResumeAttachment {
+  /** 展示文件名（不含 .pdf 后缀） */
+  name: string;
+  /** PDF 公共链接 */
+  url: string;
+}
+
 export interface ResumeEntry {
   year: string;
   role: string;
   org: string;
   detail: string;
-}
-
-export interface ResumeWriting {
-  year: string;
-  title: string;
-  venue: string;
+  /** 该经历的可下载附件（PDF） */
+  attachment?: ResumeAttachment;
 }
 
 export interface ResumeExtra {
   experience: ResumeEntry[];
   education: ResumeEntry[];
-  writings: ResumeWriting[];
-  skills: string[];
 }
 
 export interface ResearchExtra {
@@ -154,8 +155,6 @@ export interface ResumeProps {
   summary: string;
   experience: ResumeEntry[];
   education: ResumeEntry[];
-  writings: ResumeWriting[];
-  skills: string[];
 }
 
 export interface ContactLink {
